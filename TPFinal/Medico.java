@@ -1,18 +1,21 @@
 package TPFinal;
 
-import java.util.LinkedList;
+
+import TPFinal.TDAs.LinkedList;
+
+import java.util.PriorityQueue;
 
 public class Medico {
     private String nombre;
     private String especialidad;
     private String id;
-    private LinkedList<Turno> turnosDelDia;
+    private PriorityQueue<Turno> turnos;
 
     public Medico(String nombre, String especialidad, String id) {
         this.nombre = nombre;
         this.especialidad = especialidad;
         this.id = id;
-        this.turnosDelDia = new LinkedList<>();
+        this.turnos = new PriorityQueue<>();
     }
 
     public String getId() {
@@ -23,11 +26,11 @@ public class Medico {
         return nombre;
     }
 
-    public LinkedList<Turno> getTurnosDelDia() {
-        return turnosDelDia;
+    public PriorityQueue<Turno> getTurnosDelDia() {
+        return turnos;
     }
 
     public void agregarTurno(Turno turno) {
-        turnosDelDia.add(turno);
+        turnos.add(turno);
     }
 }

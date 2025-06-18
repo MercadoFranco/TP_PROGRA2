@@ -1,6 +1,6 @@
 package TPFinal;
 
-import java.util.LinkedList;
+import TPFinal.TDAs.LinkedList;
 
 public class Paciente {
     private String nombre;

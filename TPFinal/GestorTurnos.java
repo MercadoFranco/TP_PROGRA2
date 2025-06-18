@@ -1,28 +1,23 @@
 package TPFinal;
 
+import TPFinal.TDAs.Stack;
+
 import java.time.LocalDateTime;
-
 import java.util.HashMap;
-
 import java.util.Iterator;
-
 import java.util.Map;
-
 import java.util.PriorityQueue;
-
-import java.util.Stack;
 
 public class GestorTurnos {
     private Map<String, Paciente> pacientes;
-    private Map<String, Medico> medicos;
+    private Map<String, Especialidad> especialidades;
     private PriorityQueue<Turno> colaTurnos;
     private Stack<Turno> cancelacionesRecientes;
 
     public GestorTurnos() {
         pacientes = new HashMap<>();
-        medicos = new HashMap<>();
-        colaTurnos = new PriorityQueue<>();
         cancelacionesRecientes = new Stack<>();
+        especialidades = new HashMap<>();
     }
 
 
@@ -33,34 +28,28 @@ public class GestorTurnos {
     }
 
 
-    public void registrarMedico(String nombre, String especialidad, String id) {
-        if (!medicos.containsKey(id)) {
-            medicos.put(id, new Medico(nombre, especialidad, id));
-        }
-    }
-
-
-    public void solicitarTurno(String dniPaciente, String idMedico, LocalDateTime fechaHora, int prioridad) {
+    public void solicitarTurnoEspecialidad(String dniPaciente, String idEspecialidad, LocalDateTime fechaHora, int prioridad) {
         Paciente paciente = pacientes.get(dniPaciente);
-        Medico medico = medicos.get(idMedico);
+        Especialidad especialidad = especialidades.get(idEspecialidad);
+
+        // TODO: Acá deberíamos revisar entre todos los médicos de la especialidad, cuál es el que tiene menos turnos, para asignárselo automáticamente.
+        Medico medico = especialidad.getMedico("1");
 
         if (paciente != null && medico != null) {
             Turno turno = new Turno(paciente, medico, fechaHora, prioridad);
-
-            colaTurnos.add(turno);
-
-            medico.agregarTurno(turno);
+            especialidad.agregarTurno(); // TODO: implementar para que la especialidad le agregue el turno al médico
             paciente.agregarTurnoAlHistorial(turno);
         } else {
-            System.out.println("Médico o paciente no encontrado.");
+            System.out.println("Especialidad o paciente no encontrado.");
         }
-
     }
 
 
     public Turno atenderSiguiente() {
         if (!colaTurnos.isEmpty()) {
-            return colaTurnos.poll();
+            Turno turnoAtendido = colaTurnos.poll();
+            // TODO: Implementar la lógica de atender a través de la clase especialidad, liberando el turno del médico
+            //       en cuestión
         }
 
         return null;
@@ -75,6 +64,7 @@ public class GestorTurnos {
             if (t.getPaciente().getDni().equals(dniPaciente)) {
                 cancelacionesRecientes.push(t);
                 it.remove();
+                // TODO: También remover del listado de turnos de cada doctor y capaz de cada paciente.
                 return true;
             }
         }
@@ -87,6 +77,7 @@ public class GestorTurnos {
         if (!cancelacionesRecientes.isEmpty()) {
             Turno turno = cancelacionesRecientes.pop();
             colaTurnos.add(turno);
+            // TODO: También volver a agregar a la cola de los doctores y capaz de los pacientes también.
             return true;
         }
 

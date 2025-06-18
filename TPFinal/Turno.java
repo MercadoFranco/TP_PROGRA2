@@ -7,6 +7,7 @@ public class Turno implements Comparable<Turno> {
     private Medico medico;
     private LocalDateTime fechaHora;
     private int prioridad; // 1 = urgente, 2 = normal, 3 = control
+    private boolean cumplido = false;
 
     public Turno(Paciente paciente, Medico medico, LocalDateTime fechaHora, int prioridad) {
         this.paciente = paciente;
@@ -29,6 +30,10 @@ public class Turno implements Comparable<Turno> {
 
     public LocalDateTime getFechaHora() {
         return fechaHora;
+    }
+
+    public void atender() {
+        cumplido = true;
     }
 
     @Override
