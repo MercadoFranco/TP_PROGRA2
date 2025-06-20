@@ -24,7 +24,17 @@ public class Especialidad {
         return nombre;
     }
 
-    public Medico getMedico(String idMedico) { return medicos.get(idMedico); }
+    public Medico getMedico(String idMedico) {
+        return medicos.get(idMedico);
+    }
+
+    public List<String> getMedicosIds() {
+        return new ArrayList<String>(this.medicos.keySet());
+    }
+
+    public Map<String, Medico> getMedicos() {
+        return this.medicos;
+    }
 
     public boolean registrarMedico(Medico medico) {
         String idMedico = medico.getId();
@@ -49,7 +59,6 @@ public class Especialidad {
 
     public Turno agregarTurno(Paciente paciente, int prioridad) {
         if (medicos.isEmpty()) {
-            System.out.println("Aún no existen médicos en esta especialidad. Por favor primero cree alguno.");
             return null;
         }
 
@@ -65,7 +74,6 @@ public class Especialidad {
         }
 
         if (medicoConMenosTurnos == null) {
-            System.out.println("Ocurrió un error al buscar un turno.");
             return null;
         }
 
@@ -76,13 +84,44 @@ public class Especialidad {
         return nuevoTurno;
     }
 
-    public boolean eliminarTurno(String idTurno) {
-        Turno turnoAEliminar = turnos.stream().filter(t -> t.getId().equals(idTurno)).findFirst().orElse(null);
-        if (turnoAEliminar == null) {
+    public Turno atenderPrimerTurno() {
+        if (turnos.isEmpty()) {
+            return null;
+        }
+
+        Turno turnoAtendido = turnos.poll();
+        if (turnoAtendido != null) {
+            Medico medicoQueAtendio = turnoAtendido.getMedico();
+            medicoQueAtendio.atenderPrimerTurno();
+            return turnoAtendido;
+        }
+
+        return null;
+    }
+
+    public boolean eliminarTurno(Turno turno) {
+        if (!turnos.contains(turno)) {
             return false;
         }
 
-        turnos.remove(turnoAEliminar);
+        turnos.remove(turno);
         return true;
+    }
+
+    public boolean cancelarTurno(Turno turno) {
+        if (!turnos.contains(turno)) {
+            return false;
+        }
+
+        Medico medico = turno.getMedico();
+        if (medico.eliminarTurno(turno)) {
+            turnos.remove(turno);
+        }
+
+        return false;
+    }
+
+    public PriorityQueue<Turno> getTurnos() {
+        return turnos;
     }
 }
