@@ -3,21 +3,37 @@ package TPFinal;
 import TPFinal.TDAs.Stack;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.PriorityQueue;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class GestorTurnos {
     private Map<String, Paciente> pacientes;
     private Map<String, Especialidad> especialidades;
-    private PriorityQueue<Turno> colaTurnos;
+    private PriorityQueue<Turno> colaTurnos; // Creo que esto en realidad debería ir en cada especialidad, no una para todo
     private Stack<Turno> cancelacionesRecientes;
 
     public GestorTurnos() {
         pacientes = new HashMap<>();
         cancelacionesRecientes = new Stack<>();
         especialidades = new HashMap<>();
+    }
+
+    public boolean registrarEspecialidad(Especialidad especialidad) {
+        try {
+            especialidades.put(especialidad.getId(), especialidad);
+            return true;
+        } catch (NullPointerException e) {
+            return false;
+        }
+    }
+
+    public boolean eliminarEspecialidad(String idEspecialidad) {
+        try {
+            especialidades.remove(idEspecialidad);
+            return true;
+        } catch (NullPointerException e) {
+            return false;
+        }
     }
 
 
@@ -36,8 +52,8 @@ public class GestorTurnos {
         Medico medico = especialidad.getMedico("1");
 
         if (paciente != null && medico != null) {
-            Turno turno = new Turno(paciente, medico, fechaHora, prioridad);
-            especialidad.agregarTurno(); // TODO: implementar para que la especialidad le agregue el turno al médico
+            Turno turno = new Turno(paciente, medico, especialidad, fechaHora, prioridad);
+            especialidad.agregarTurno(paciente, prioridad); // TODO: implementar para que la especialidad le agregue el turno al médico
             paciente.agregarTurnoAlHistorial(turno);
         } else {
             System.out.println("Especialidad o paciente no encontrado.");
@@ -92,6 +108,14 @@ public class GestorTurnos {
             System.out.println(t);
         }
 
+    }
+
+    public Map<String, Especialidad> getEspecialidades() {
+        return this.especialidades;
+    }
+
+    public List<String> getEspecialidadesIds() {
+        return new ArrayList<String>(this.especialidades.keySet());
     }
 
 }

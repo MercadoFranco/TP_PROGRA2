@@ -26,7 +26,7 @@ public class Medico {
         return nombre;
     }
 
-    public PriorityQueue<Turno> getTurnosDelDia() {
+    public PriorityQueue<Turno> getTurnos() {
         return turnos;
     }
 
