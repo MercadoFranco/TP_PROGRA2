@@ -1,7 +1,6 @@
 package TPFinal;
 
-
-import TPFinal.TDAs.LinkedList;
+import TPFinal.TDAs.Stack;
 
 import java.util.PriorityQueue;
 import java.util.UUID;
@@ -11,6 +10,7 @@ public class Medico {
     private String idEspecialidad;
     private String id;
     private PriorityQueue<Turno> turnos;
+    private Stack<Turno> historicoTurnos;
 
     public Medico(String nombre, String idEspecialidad) {
         this.nombre = nombre;
@@ -40,6 +40,7 @@ public class Medico {
     }
 
     public Turno atenderPrimerTurno() {
+        historicoTurnos.push(turnos.peek());
         return turnos.poll();
     }
 

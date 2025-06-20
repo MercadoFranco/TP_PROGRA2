@@ -10,7 +10,6 @@ public class Turno implements Comparable<Turno> {
     private String id;
     private LocalDateTime fechaHora;
     private int prioridad; // 1 = urgente, 2 = normal, 3 = control
-    private boolean cumplido;
 
     public Turno(Paciente paciente, Medico medico, Especialidad especialidad, LocalDateTime fechaHora, int prioridad) {
         this.paciente = paciente;
@@ -19,7 +18,6 @@ public class Turno implements Comparable<Turno> {
         this.fechaHora = fechaHora;
         this.prioridad = prioridad;
         this.id = UUID.randomUUID().toString();
-        this.cumplido = false;
     }
 
     public int getPrioridad() {
@@ -40,10 +38,6 @@ public class Turno implements Comparable<Turno> {
 
     public LocalDateTime getFechaHora() {
         return fechaHora;
-    }
-
-    public void atender() {
-        cumplido = true;
     }
 
     @Override

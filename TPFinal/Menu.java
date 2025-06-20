@@ -1,12 +1,11 @@
 package TPFinal;
 
-import java.time.LocalDateTime;
+import TPFinal.TDAs.LinkedList;
 
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Scanner;
-import java.util.function.Function;
 
 public class Menu<T> {
 
@@ -252,7 +251,7 @@ public class Menu<T> {
         }
     }
 
-    public void atenderTurnoDoctor(GestorTurnos gestor, Scanner sc) {
+    public void atenderTurnoMedico(GestorTurnos gestor, Scanner sc) {
         Especialidad especialidadElegida = elegirEspecialidad(sc, gestor, "¿De qué especialidad es el doctor que desea atender un turno?");
         if (especialidadElegida == null) {
             System.out.println("Especialidad inválida, la operación ha sido cancelada.");
@@ -265,13 +264,8 @@ public class Menu<T> {
             return;
         }
 
-        Turno turnoAtendido = medicoElegido.atenderPrimerTurno();
-        if (turnoAtendido == null) {
-            System.out.println("Ha ocurrido un error al atender el turno. Por favor intente nuevamente.");
-            return;
-        }
 
-        if (especialidadElegida.eliminarTurno(turnoAtendido)) {
+        if (gestor.atenderTurnoMedico(especialidadElegida.getId(), medicoElegido.getId()) != null) {
             System.out.println("El turno ha sido atendido con éxito.");
         } else {
             System.out.println("Ocurrió un error al atender el turno, por favor intente nuevamente.");
@@ -293,10 +287,11 @@ public class Menu<T> {
     }
 
     public void deshacerCancelarTurno(GestorTurnos gestor, Scanner sc) {
-        Especialidad especialidad = elegirEspecialidad(sc, gestor, "¿De qué especialidad desea recuperar el último turno deshecho?");
+        System.out.println("¿Desea recuperar el último turno cancelado?\n1)Sí\n2)No");
+        int opcion = sc.nextInt();
 
-        if (especialidad == null) {
-            System.out.println("Especialidad inválida, la operación ha sido cancelada.");
+        if (opcion != 1) {
+            System.out.println("El turno cancelado no ha sido recuperado.");
             return;
         }
 
@@ -307,6 +302,42 @@ public class Menu<T> {
         }
 
         System.out.println("El turno de " + turnoRecuperado.getPaciente().getNombre() + " con el doctor " + turnoRecuperado.getMedico().getNombre() + " de " + turnoRecuperado.getEspecialidad().getNombre() + " ha sido recuperado con éxito y fue agregado nuevamente a la cola.");
+    }
+
+    // ------------------------------
+
+
+    // ------------------------------
+    // --------Mostrar turnos--------
+    // ------------------------------
+
+    public void mostrarTurnosPendientesEspecialidad(GestorTurnos gestor, Scanner sc) {
+        Especialidad especialidad = elegirEspecialidad(sc, gestor, "¿De la guardia de qué especialidad quiere ver los turnos?");
+        if (especialidad == null) {
+            System.out.println("La especialidad es inválida, la operación fue cancelada.");
+            return;
+        }
+
+        PriorityQueue<Turno> turnos = especialidad.getTurnos();
+
+        turnos.forEach(turno -> System.out.println(turno.toString()));
+    }
+
+    public void mostrarTurnosPendientesMedico(GestorTurnos gestor, Scanner sc) {
+        Especialidad especialidad = elegirEspecialidad(sc, gestor, "¿A qué especialidad pertenece el médico cuyos turnos quiere ver?");
+        if (especialidad == null) {
+            System.out.println("Especialidad inválida. La operación será cancelada.");
+            return;
+        }
+
+        Medico medico = elegirMedico(sc, gestor, "¿Los turnos pendientes de qué médico quiere ver?");
+        if (medico == null) {
+            System.out.println("Médico elegido inválido, la operación será cancelada.");
+            return;
+        }
+
+        PriorityQueue<Turno> turnos = medico.getTurnos();
+        turnos.forEach(turno -> System.out.println(turno.toString()));
     }
 
 

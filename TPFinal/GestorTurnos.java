@@ -102,13 +102,37 @@ public class GestorTurnos {
         }
 
         Turno turnoAtendido = especialidad.atenderPrimerTurno();
+        if (turnoAtendido != null) {
+            Paciente pacienteAtendido = pacientes.get(idEspecialidad);
+            pacienteAtendido.agregarTurnoAlHistorial(turnoAtendido);
+        }
 
         return turnoAtendido != null;
     }
 
+    public Turno atenderTurnoMedico(String idEspecialidad, String idMedico) {
+        Especialidad especialidad = especialidades.get(idEspecialidad);
+
+        if (especialidad == null) {
+            return null;
+        }
+
+        Medico medico = especialidad.getMedico(idMedico);
+
+        if (medico == null || medico.getTurnos().isEmpty()) {
+            return null;
+        }
+
+        Turno turnoAtendido = medico.atenderPrimerTurno();
+        if (turnoAtendido != null) {
+            especialidad.eliminarTurno(turnoAtendido);
+        }
+
+        return turnoAtendido;
+    }
+
     public boolean cancelarTurno(Turno turno) {
         Especialidad especialidad = turno.getEspecialidad();
-
         if (especialidad.cancelarTurno(turno)) {
             cancelacionesRecientes.push(turno);
             return true;

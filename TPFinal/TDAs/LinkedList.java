@@ -17,6 +17,10 @@ public class LinkedList<T> {
         actual.next = nuevo;
     }
 
+    public Node<T> getFirst() {
+        return head;
+    }
+
     public boolean delete(T data) {
         if (head == null) return false;
         if (head.data.equals(data)) {
@@ -35,7 +39,7 @@ public class LinkedList<T> {
     public void print() {
         Node<T> actual = head;
         while (actual != null) {
-            System.out.print(actual.data + " -> ");
+            System.out.println(actual.data);
             actual = actual.next;
         }
         System.out.println("null");
