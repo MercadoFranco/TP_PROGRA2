@@ -7,6 +7,27 @@ public class Stack<T> {
         this.top = null;
     }
 
+    // Segundo constructor para poder crear un stack basado en otro
+    public Stack(Stack<T> other) {
+        if (other.top == null) {
+            this.top = null;
+        } else {
+            Stack<T> tempStack = new Stack<>();
+            Node<T> current = other.top;
+
+            while (current != null) {
+                tempStack.push(current.data);
+                current = current.next;
+            }
+
+            current = tempStack.top;
+            while (current != null) {
+                this.push(current.data);
+                current = current.next;
+            }
+        }
+    }
+
     public void push(T value) {
         Node<T> newNode = new Node<>(value);
         newNode.next = top;

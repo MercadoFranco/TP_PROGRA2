@@ -3,6 +3,8 @@ package TPFinal;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static TPFinal.Utils.generateId;
+
 public class Especialidad {
     private Map<String, Medico> medicos;
     private String nombre;
@@ -11,7 +13,7 @@ public class Especialidad {
 
     public Especialidad(String nombre) {
         this.nombre = nombre;
-        this.id = UUID.randomUUID().toString();
+        this.id = generateId();
         this.medicos = new HashMap<>();
         this.turnos = new PriorityQueue<>();
     }
@@ -40,10 +42,8 @@ public class Especialidad {
         String idMedico = medico.getId();
         if (!medicos.containsKey(idMedico)) {
             medicos.put(idMedico, medico);
-            System.out.println("El médico ha sido registrado con éxito.");
             return true;
         }
-        System.out.println("Ocurrió un error al registrar el medico.");
         return false;
     }
 
@@ -80,7 +80,7 @@ public class Especialidad {
         LocalDateTime fechaActual = LocalDateTime.now();
         Turno nuevoTurno = new Turno(paciente, medicoConMenosTurnos, this, fechaActual, prioridad);
         medicoConMenosTurnos.agregarTurno(nuevoTurno);
-        turnos.add(nuevoTurno);
+        turnos.offer(nuevoTurno);
         return nuevoTurno;
     }
 
@@ -110,12 +110,14 @@ public class Especialidad {
 
     public boolean cancelarTurno(Turno turno) {
         if (!turnos.contains(turno)) {
+            System.out.println("no hay turno");
             return false;
         }
 
         Medico medico = turno.getMedico();
         if (medico.eliminarTurno(turno)) {
             turnos.remove(turno);
+            return true;
         }
 
         return false;

@@ -3,7 +3,8 @@ package TPFinal;
 import TPFinal.TDAs.Stack;
 
 import java.util.PriorityQueue;
-import java.util.UUID;
+
+import static TPFinal.Utils.generateId;
 
 public class Medico {
     private String nombre;
@@ -15,8 +16,9 @@ public class Medico {
     public Medico(String nombre, String idEspecialidad) {
         this.nombre = nombre;
         this.idEspecialidad = idEspecialidad;
-        this.id = UUID.randomUUID().toString();
+        this.id = generateId();
         this.turnos = new PriorityQueue<>();
+        this.historicoTurnos = new Stack<>();
     }
 
     public String getId() {
@@ -35,8 +37,10 @@ public class Medico {
         return turnos;
     }
 
+    public Stack<Turno> getHistoricoTurnos() { return historicoTurnos; }
+
     public void agregarTurno(Turno turno) {
-        turnos.add(turno);
+        turnos.offer(turno);
     }
 
     public Turno atenderPrimerTurno() {
@@ -46,5 +50,31 @@ public class Medico {
 
     public boolean eliminarTurno(Turno turno) {
         return turnos.remove(turno);
+    }
+
+    public void mostrarTurnosPendientes() {
+        PriorityQueue<Turno> auxiliarTurnos = new PriorityQueue<Turno>(turnos);
+
+        if (auxiliarTurnos.isEmpty()) {
+            System.out.println("| El médico no tiene turnos.");
+        } else {
+            do {
+                Turno turnoSacado = auxiliarTurnos.poll();
+                System.out.println("| " + turnoSacado.toString());
+            } while (!auxiliarTurnos.isEmpty());
+        }
+    }
+
+    public void mostrarTurnosHistoricos() {
+        Stack<Turno> auxiliarTurnos = new Stack<>(historicoTurnos);
+
+        if (auxiliarTurnos.isEmpty()) {
+            System.out.println("| El médico aún no ha tomado ningún turno.");
+        } else {
+            do {
+                Turno turnoSacado = auxiliarTurnos.pop();
+                System.out.println("| " + turnoSacado.toString());
+            } while (!auxiliarTurnos.isEmpty());
+        }
     }
 }

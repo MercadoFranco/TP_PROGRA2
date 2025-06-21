@@ -1,9 +1,8 @@
 package TPFinal;
 
-import java.util.List;
-import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Scanner;
+import java.util.*;
+
+import TPFinal.TDAs.Stack;
 
 public class Menu {
 
@@ -11,7 +10,27 @@ public class Menu {
     // ---Funciones útiles comunes---
     // ------------------------------
 
+    public static void clearScreen() {
+        try {
+            final String os = System.getProperty("os.name");
+
+            if (os.contains("Windows")) {
+                Runtime.getRuntime().exec("cls");
+            } else {
+                Runtime.getRuntime().exec("clear");
+            }
+        } catch (final Exception e) {
+            System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+        }
+    }
+
+
     public static Especialidad elegirEspecialidad(Scanner sc, GestorTurnos gestor, String titulo) {
+        if (gestor.getEspecialidades().isEmpty()) {
+            System.out.println("Aún no hay especialidades registradas.");
+            return null;
+        }
+
         List<String> keysEspecialidades = gestor.getEspecialidadesIds();
         Map<String, Especialidad> mapEspecialidades = gestor.getEspecialidades();
         Especialidad especialidadElegida;
@@ -23,13 +42,14 @@ public class Menu {
             System.out.println((i + 1) + ") " + mapEspecialidades.get(key).getNombre());
         }
 
-        System.out.println("-1) Salir");
+        System.out.println("0) Salir");
         int opcionEspecialidad = sc.nextInt();
+        sc.nextLine();
 
-        if (opcionEspecialidad == -1) {
+        if (opcionEspecialidad == 0) {
             System.out.println("Operación cancelada.");
             return null;
-        } else if (!keysEspecialidades.get(opcionEspecialidad).isEmpty()) {
+        } else if (opcionEspecialidad > 0 && opcionEspecialidad <= keysEspecialidades.size() && !keysEspecialidades.get(opcionEspecialidad - 1).isEmpty()) {
             String keyElegida = keysEspecialidades.get(opcionEspecialidad - 1);
             especialidadElegida = mapEspecialidades.get(keyElegida);
 
@@ -48,6 +68,11 @@ public class Menu {
             return null;
         }
 
+        if (especialidad.getMedicos().isEmpty()) {
+            System.out.println("Esta especialidad aún no tiene médicos.");
+            return null;
+        }
+
         List<String> keysMedicos = especialidad.getMedicosIds();
         Map<String, Medico> mapMedicos = especialidad.getMedicos();
         Medico medicoElegido;
@@ -59,13 +84,14 @@ public class Menu {
             System.out.println((i + 1) + ") " + mapMedicos.get(key).getNombre());
         }
 
-        System.out.println("-1) Salir");
+        System.out.println("0) Salir");
         int opcionMedico = sc.nextInt();
+        sc.nextLine();
 
-        if (opcionMedico == -1) {
+        if (opcionMedico == 0) {
             System.out.println("Operación cancelada.");
             return null;
-        } else if (!keysMedicos.get(opcionMedico).isEmpty()) {
+        } else if (opcionMedico > 0 && opcionMedico <= keysMedicos.size() && !keysMedicos.get(opcionMedico - 1).isEmpty()) {
             String keyElegida = keysMedicos.get(opcionMedico - 1);
             medicoElegido = mapMedicos.get(keyElegida);
 
@@ -82,6 +108,10 @@ public class Menu {
         if (especialidad == null) {
             return null;
         }
+        if (especialidad.getTurnos().isEmpty()) {
+            System.out.println("Esta especialidad aún no tiene turnos.");
+            return null;
+        }
 
         Turno turnoElegido = null;
         Turno[] turnos = especialidad.getTurnos().toArray(new Turno[0]);
@@ -91,14 +121,15 @@ public class Menu {
             System.out.println((i + 1) + ") Turno para " + turnos[i].getPaciente().getNombre() + " a las " + turnos[i].getFechaHora() + " con " + turnos[i].getMedico().getNombre() + " ");
         }
 
-        System.out.println("-1) Salir");
+        System.out.println("0) Salir");
 
         int opcionTurno = sc.nextInt();
+        sc.nextLine();
 
-        if (opcionTurno == -1) {
+        if (opcionTurno <= 0 || opcionTurno > turnos.length) {
             System.out.println("Operación cancelada.");
-        } else if (turnos[opcionTurno] != null) {
-            turnoElegido = turnos[opcionTurno];
+        } else if (turnos[opcionTurno - 1] != null) {
+            turnoElegido = turnos[opcionTurno - 1];
         }
 
         return turnoElegido;
@@ -125,11 +156,33 @@ public class Menu {
     public static void eliminarEspecialidad(GestorTurnos gestor, Scanner sc) {
         Especialidad especialidadAEliminar = elegirEspecialidad(sc, gestor, "Elija la especialidad que desea eliminar");
 
-        if (especialidadAEliminar != null) {
+        if (especialidadAEliminar != null && gestor.eliminarEspecialidad(especialidadAEliminar.getId())) {
             System.out.println("¡La especialidad ha sido eliminada con éxito!");
         } else {
             System.out.println("La especialidad no ha sido eliminada.");
         }
+    }
+
+    public static void mostrarEspecialidades(GestorTurnos gestor) {
+        List<Especialidad> especialidades = gestor.getEspecialidades().values().stream().toList();
+
+        if (especialidades.isEmpty()) {
+            System.out.println("Aún no hay especialidades creadas.");
+            return;
+        }
+
+        especialidades.forEach(e -> {
+            List<Medico> medicos = e.getMedicos().values().stream().toList();
+            System.out.println("-------------------------------------------------");
+            System.out.println("|              " + e.getNombre());
+            System.out.println("-------------------------------------------------");
+            if (medicos.isEmpty()) {
+                System.out.println("|        Esta especialidad aún no tiene médicos.");
+            } else {
+                medicos.forEach(m -> System.out.println("| " + m.getId() + " | " + m.getNombre()));
+            }
+            System.out.println("-------------------------------------------------\n");
+        });
     }
 
     // ------------------------------
@@ -145,7 +198,7 @@ public class Menu {
         System.out.println("¿Cuál es el nombre de la paciente que desea registrar?");
         String nombrePaciente = sc.nextLine();
 
-        Paciente nuevoPaciente = new Paciente(dniPaciente, nombrePaciente);
+        Paciente nuevoPaciente = new Paciente(nombrePaciente, dniPaciente);
         if (gestor.registrarPaciente(nuevoPaciente)) {
             System.out.println("¡El paciente " + nombrePaciente + " ha sido agregado con éxito!");
         } else {
@@ -161,6 +214,25 @@ public class Menu {
         } else {
             System.out.println("Ocurrió un error al eliminar el paciente.");
         }
+    }
+
+    public static void mostrarPaciente(GestorTurnos gestor, Scanner sc) {
+        System.out.println("Ingrese el dni del paciente que desea ver sin puntos (Por ejemplo 44222333):");
+        String dniPaciente = sc.nextLine();
+        Paciente paciente = gestor.getPaciente(dniPaciente);
+        if (paciente == null) {
+            System.out.println("El paciente no fue encontrado. Revise el dni ingresado e intente nuevamente.");
+            return;
+        }
+
+        System.out.println("--------------------------------");
+        System.out.println("|  DNI  : " + paciente.getDni());
+        System.out.println("|  Nombre: " + paciente.getNombre());
+        System.out.println("|-------------------------------");
+        System.out.println("|       Turnos históricos");
+        System.out.println("|-------------------------------");
+        paciente.mostrarTurnosHistoricos();
+        System.out.println("|-------------------------------");
     }
 
     // ------------------------------
@@ -188,10 +260,31 @@ public class Menu {
         }
     }
 
+    public static void mostrarMedico(GestorTurnos gestor, Scanner sc) {
+        Medico medico = elegirMedico(sc, gestor, "¿Qué médico quiere ver?");
+        if (medico == null) {
+            System.out.println("Médico inválido, volviendo al menú principal.");
+            return;
+        }
+
+        System.out.println("--------------------------------");
+        System.out.println("|  ID  : " + medico.getId());
+        System.out.println("|  Nombre: " + medico.getNombre());
+        System.out.println("|-------------------------------");
+        System.out.println("|       Turnos Pendientes");
+        System.out.println("|-------------------------------");
+        medico.mostrarTurnosPendientes();
+        System.out.println("|-------------------------------");
+        System.out.println("|       Turnos históricos");
+        System.out.println("|-------------------------------");
+        medico.mostrarTurnosHistoricos();
+        System.out.println("|-------------------------------");
+    }
+
     public static void eliminarMedico(GestorTurnos gestor, Scanner sc) {
         Medico medicoElegido = elegirMedico(sc, gestor, "Elija el médico que desea eliminar");
 
-        if (medicoElegido != null) {
+        if (medicoElegido != null && gestor.eliminarMedico(medicoElegido.getIdEspecialidad(), medicoElegido.getId())) {
             System.out.println("¡El médico ha sido eliminado con éxito!");
         } else {
             System.out.println("El médico no ha sido eliminado.");
@@ -212,6 +305,11 @@ public class Menu {
             return;
         }
 
+        if (especialidadElegida.getMedicos().isEmpty()) {
+            System.out.println("Esta especialidad aún no tiene médicos, por favor agreguele médicos y vuelva a intentar.");
+            return;
+        }
+
         System.out.println("Ingrese el dni del paciente que desea sacar turno sin puntos (Por ejemplo 44222333):");
         String dniPaciente = sc.nextLine();
         Paciente paciente = gestor.getPaciente(dniPaciente);
@@ -219,9 +317,11 @@ public class Menu {
             System.out.println("El paciente no fue encontrado. Revise el dni ingresado e intente nuevamente.");
             return;
         }
-
-        System.out.println("¿Cuál es la prioridad de la emergencia del paciente?\n1) Urgente\2) Normal\n3) Control");
+        System.out.println("Sacando un turno para el paciente " + paciente.getNombre());
+        System.out.println("¿Cuál es la prioridad de la emergencia del paciente?\n1) Urgente\n2) Normal\n3) Control");
         int prioridad = sc.nextInt();
+        sc.nextLine();
+
         if (prioridad < 1 || prioridad > 3) {
             System.out.println("La prioridad ingresada no es valida. Intente nuevamente.");
             return;
@@ -229,7 +329,7 @@ public class Menu {
 
         Turno turnoGenerado = gestor.solicitarTurnoEspecialidad(dniPaciente, especialidadElegida.getId(), prioridad); //especialidadElegida.agregarTurno(paciente, prioridad);
         if (turnoGenerado != null) {
-            System.out.println("El turno ha sido agregado con éxito con id " + turnoGenerado.getId() + "!");
+            System.out.println("Se generó un turno con el doctor " + turnoGenerado.getMedico().getNombre() + " con éxito con id " + turnoGenerado.getId() + "!");
         } else {
             System.out.println("Ocurrió un error y el turno no ha sido generado. Por favor intente nuevamente más tarde.");
         }
@@ -242,20 +342,20 @@ public class Menu {
             return;
         }
 
-        if (gestor.atenderTurnoEspecialidad(especialidadElegida.getId())) {
-            System.out.println("El turno ha sido atendido con éxito y eliminado de la cola.");
+        if (especialidadElegida.getTurnos().isEmpty()) {
+            System.out.println("No hay turnos pendientes en la especialidad.");
+            return;
+        }
+
+        Turno turnoAtendido = gestor.atenderTurnoEspecialidad(especialidadElegida.getId());
+        if (turnoAtendido != null) {
+            System.out.println("El turno del paciente " + turnoAtendido.getPaciente().getNombre() + " con el doctor " + turnoAtendido.getMedico().getNombre() + " de prioridad " + turnoAtendido.getPrioridad() + " ha sido atendido con éxito y eliminado de la cola.");
         } else {
             System.out.println("Ocurrió un error. Por favor intente nuevamente.");
         }
     }
 
     public static void atenderTurnoMedico(GestorTurnos gestor, Scanner sc) {
-        Especialidad especialidadElegida = elegirEspecialidad(sc, gestor, "¿De qué especialidad es el doctor que desea atender un turno?");
-        if (especialidadElegida == null) {
-            System.out.println("Especialidad inválida, la operación ha sido cancelada.");
-            return;
-        }
-
         Medico medicoElegido = elegirMedico(sc, gestor, "¿Cuál médico atenderá un turno?");
         if (medicoElegido == null) {
             System.out.println("Médico inválido, la operación ha sido cancelada.");
@@ -263,7 +363,7 @@ public class Menu {
         }
 
 
-        if (gestor.atenderTurnoMedico(especialidadElegida.getId(), medicoElegido.getId()) != null) {
+        if (gestor.atenderTurnoMedico(medicoElegido.getIdEspecialidad(), medicoElegido.getId()) != null) {
             System.out.println("El turno ha sido atendido con éxito.");
         } else {
             System.out.println("Ocurrió un error al atender el turno, por favor intente nuevamente.");
@@ -287,6 +387,7 @@ public class Menu {
     public static void deshacerCancelarTurno(GestorTurnos gestor, Scanner sc) {
         System.out.println("¿Desea recuperar el último turno cancelado?\n1)Sí\n2)No");
         int opcion = sc.nextInt();
+        sc.nextLine();
 
         if (opcion != 1) {
             System.out.println("El turno cancelado no ha sido recuperado.");
@@ -316,26 +417,25 @@ public class Menu {
             return;
         }
 
-        PriorityQueue<Turno> turnos = especialidad.getTurnos();
+        PriorityQueue<Turno> auxiliarTurnos = new PriorityQueue<>(especialidad.getTurnos());
 
-        turnos.forEach(turno -> System.out.println(turno.toString()));
+        if (auxiliarTurnos.isEmpty()) {
+            System.out.println("Aún no hay turnos en la especialidad.");
+        } else {
+            do {
+                Turno turnoSacado = auxiliarTurnos.poll();
+                System.out.println(turnoSacado.toString());
+            } while (!auxiliarTurnos.isEmpty());
+        }
     }
 
     public static void mostrarTurnosPendientesMedico(GestorTurnos gestor, Scanner sc) {
-        Especialidad especialidad = elegirEspecialidad(sc, gestor, "¿A qué especialidad pertenece el médico cuyos turnos quiere ver?");
-        if (especialidad == null) {
-            System.out.println("Especialidad inválida. La operación será cancelada.");
-            return;
-        }
-
         Medico medico = elegirMedico(sc, gestor, "¿Los turnos pendientes de qué médico quiere ver?");
         if (medico == null) {
             System.out.println("Médico elegido inválido, la operación será cancelada.");
             return;
         }
-
-        PriorityQueue<Turno> turnos = medico.getTurnos();
-        turnos.forEach(turno -> System.out.println(turno.toString()));
+        medico.mostrarTurnosPendientes();
     }
 
     // ------------------------------
@@ -348,55 +448,90 @@ public class Menu {
     public static void mostrarMenuGestionTurnos(GestorTurnos gestor, Scanner sc) {
         int opcion;
 
-        System.out.println("1. Crear turno para una especialidad");
-        System.out.println("2. Atender turno de una especialidad");
-        System.out.println("3. Atender turno de un médico");
-        System.out.println("4. Mostrar turnos pendientes de una especialidad");
-        System.out.println("5. Mostrar turnos pendientes de un médico");
-        System.out.println("6. Cancelar turno");
-        System.out.println("7. Recuperar turno cancelado");
+        clearScreen();
+
+        System.out.println("---------MENU GESTIÓN TURNOS---------\n");
+        System.out.println("1. Sacar un turno");
+        System.out.println("2. Atender turno");
+        System.out.println("3. Mostrar turnos pendientes");
+        System.out.println("4. Cancelar turno");
+        System.out.println("5. Recuperar turno cancelado");
         System.out.println("0. Volver al inicio");
 
         opcion = sc.nextInt();
+        sc.nextLine();
+
         switch (opcion) {
             case 1:
                 sacarTurnoEspecialidad(gestor, sc);
                 break;
             case 2:
-                atenderTurnoEspecialidad(gestor, sc);
+                System.out.println("¿Desea atender el primer turno de una especialidad o de un doctor puntual?");
+                System.out.println("1. Atender turno de una especialidad");
+                System.out.println("2. Atender turno de un médico");
+                opcion = sc.nextInt();
+                sc.nextLine();
+
+                switch (opcion) {
+                    case 1:
+                        atenderTurnoEspecialidad(gestor, sc);
+                        break;
+                    case 2:
+                        atenderTurnoMedico(gestor, sc);
+                        break;
+                    default:
+                        System.out.println("Opción inválida. Regresando al menú principal.");
+                        break;
+                }
                 break;
             case 3:
-                atenderTurnoMedico(gestor, sc);
+                System.out.println("¿Desea mostrar los turnos pendientes de una especialidad o de un doctor puntual?");
+                System.out.println("1. Mostrar turnos de una especialidad");
+                System.out.println("2. Mostrar turnos de un médico");
+                opcion = sc.nextInt();
+                sc.nextLine();
+
+                switch (opcion) {
+                    case 1:
+                        mostrarTurnosPendientesEspecialidad(gestor, sc);
+                        break;
+                    case 2:
+                        mostrarTurnosPendientesMedico(gestor, sc);
+                        break;
+                    default:
+                        System.out.println("Opción inválida. Regresando al menú principal.");
+                        break;
+                }
                 break;
             case 4:
-                mostrarTurnosPendientesEspecialidad(gestor, sc);
-                break;
-            case 5:
-                mostrarTurnosPendientesMedico(gestor, sc);
-                break;
-            case 6:
                 cancelarTurno(gestor, sc);
                 break;
-            case 7:
+            case 5:
                 deshacerCancelarTurno(gestor, sc);
                 break;
             case 0:
                 System.out.println("Volviendo al menú principal.");
                 break;
             default:
-                System.out.println("Opcion no valida.");
+                System.out.println("Opción no válida.");
                 break;
         }
     }
 
     public static void mostrarMenuGestionEspecialidades(GestorTurnos gestor, Scanner sc) {
         int opcion;
+
+        clearScreen();
+
+        System.out.println("---------MENU GESTIÓN ESPECIALIDADES---------\n");
         System.out.println("1. Agregar una nueva especialidad");
         System.out.println("2. Eliminar una especialidad");
         System.out.println("3. Mostrar especialidades");
         System.out.println("0. Volver al inicio");
 
         opcion = sc.nextInt();
+        sc.nextLine();
+
         switch (opcion) {
             case 1:
                 agregarEspecialidad(gestor, sc);
@@ -405,7 +540,7 @@ public class Menu {
                 eliminarEspecialidad(gestor, sc);
                 break;
             case 3:
-                // TODO:mostrarEspecialidades, nombres de especialidades con los médicos abajo o algo así
+                mostrarEspecialidades(gestor);
                 break;
             case 0:
                 System.out.println("Volviendo al menú principal.");
@@ -418,12 +553,18 @@ public class Menu {
 
     public static void mostrarMenuGestionMedicos(GestorTurnos gestor, Scanner sc) {
         int opcion;
+
+        clearScreen();
+
+        System.out.println("---------MENU GESTIÓN MÉDICOS---------\n");
         System.out.println("1. Agregar un nuevo médico");
         System.out.println("2. Eliminar un médico");
         System.out.println("3. Mostrar datos de un médico");
         System.out.println("0. Volver al inicio");
 
         opcion = sc.nextInt();
+        sc.nextLine();
+
         switch (opcion) {
             case 1:
                 agregarMedico(gestor, sc);
@@ -432,7 +573,7 @@ public class Menu {
                 eliminarMedico(gestor, sc);
                 break;
             case 3:
-                // TODO:mostrarMédico, datos del médico con el historial de turnos que atendió o algo así
+                mostrarMedico(gestor, sc);
                 break;
             case 0:
                 System.out.println("Volviendo al menú principal.");
@@ -446,12 +587,17 @@ public class Menu {
     public static void mostrarMenuGestionPacientes(GestorTurnos gestor, Scanner sc) {
         int opcion;
 
+        clearScreen();
+
+        System.out.println("---------MENU GESTIÓN PACIENTES---------\n");
         System.out.println("1. Agregar un nuevo paciente");
         System.out.println("2. Eliminar un paciente");
         System.out.println("3. Mostrar datos de un paciente");
         System.out.println("0. Volver al inicio");
 
         opcion = sc.nextInt();
+        sc.nextLine();
+
         switch (opcion) {
             case 1:
                 agregarPaciente(gestor, sc);
@@ -460,7 +606,7 @@ public class Menu {
                 eliminarPaciente(gestor, sc);
                 break;
             case 3:
-                // TODO: mostrarPaciente, datos del paciente y listar los turnos historicos tomados o algo así
+                mostrarPaciente(gestor, sc);
                 break;
             case 0:
                 System.out.println("Volviendo al menú principal.");
@@ -475,6 +621,9 @@ public class Menu {
         int opcion;
 
         do {
+            clearScreen();
+
+            System.out.println("---------MENU PRINCIPAL---------\n");
             System.out.println("1. Gestión de Turnos");
             System.out.println("2. Gestión de Especialidades");
             System.out.println("3. Gestión de Médicos");
@@ -482,6 +631,8 @@ public class Menu {
             System.out.println("0. Salir");
 
             opcion = sc.nextInt();
+            sc.nextLine();
+
             switch (opcion) {
                 case 1:
                     mostrarMenuGestionTurnos(gestor, sc);
@@ -502,6 +653,8 @@ public class Menu {
                     System.out.println("Opcion no valida.");
                     break;
             }
+            System.out.println("<Presione enter para continuar>");
+            sc.nextLine();
         } while (opcion != 0);
     }
 
@@ -524,6 +677,7 @@ public class Menu {
         Paciente paciente2 = new Paciente("Sinvi Taminas", "44333223");
         Paciente paciente3 = new Paciente("Eldia Bético", "44333224");
         Paciente paciente4 = new Paciente("Laque Brada", "44333225");
+        Paciente paciente5 = new Paciente("Franco Mercado", "1");
 
         gestor.registrarEspecialidad(traumatologia);
         gestor.registrarEspecialidad(pediatria);
@@ -533,6 +687,7 @@ public class Menu {
         gestor.registrarPaciente(paciente2);
         gestor.registrarPaciente(paciente3);
         gestor.registrarPaciente(paciente4);
+        gestor.registrarPaciente(paciente5);
     }
 
 

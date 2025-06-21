@@ -46,6 +46,12 @@ public class GestorTurnos {
     public boolean eliminarPaciente(String dni) {
         try {
             pacientes.remove(dni);
+            List<String> keysEspecialidades = getEspecialidades().keySet().stream().toList();
+            keysEspecialidades.forEach(key -> {
+                Especialidad especialidad = especialidades.get(key);
+                especialidad.getTurnos().removeIf(t -> t.getPaciente().getDni().equals(dni));
+            });
+
             return true;
         } catch (NullPointerException e) {
             return false;
@@ -91,23 +97,25 @@ public class GestorTurnos {
     }
 
 
-    public boolean atenderTurnoEspecialidad(String idEspecialidad) {
+    public Turno atenderTurnoEspecialidad(String idEspecialidad) {
         Especialidad especialidad = especialidades.get(idEspecialidad);
         if (especialidad == null) {
-            return false;
+            System.out.println("La Especialidad no existe");
+            return null;
         }
 
         if (especialidad.getTurnos().isEmpty()) {
-            return false;
+            System.out.println("La especialidad no tiene turnos");
+            return null;
         }
 
         Turno turnoAtendido = especialidad.atenderPrimerTurno();
         if (turnoAtendido != null) {
-            Paciente pacienteAtendido = pacientes.get(idEspecialidad);
+            Paciente pacienteAtendido = turnoAtendido.getPaciente();
             pacienteAtendido.agregarTurnoAlHistorial(turnoAtendido);
         }
 
-        return turnoAtendido != null;
+        return turnoAtendido;
     }
 
     public Turno atenderTurnoMedico(String idEspecialidad, String idMedico) {
@@ -153,23 +161,9 @@ public class GestorTurnos {
             return turno;
         }
 
+        System.out.println("No hay turnos cancelados para recuperar.");
         return null;
     }
-
-
-
-
-    /*
-
-
-    public void mostrarTurnosEnEspera() {
-        System.out.println("📋 Turnos en espera:");
-
-        for (Turno t : colaTurnos) {
-            System.out.println(t);
-        }
-
-    }*/
 
     // ------------------------------
 

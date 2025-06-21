@@ -1,7 +1,9 @@
 package TPFinal;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
+import java.time.format.DateTimeFormatter;
+
+import static TPFinal.Utils.generateId;
 
 public class Turno implements Comparable<Turno> {
     private Paciente paciente;
@@ -17,14 +19,16 @@ public class Turno implements Comparable<Turno> {
         this.especialidad = especialidad;
         this.fechaHora = fechaHora;
         this.prioridad = prioridad;
-        this.id = UUID.randomUUID().toString();
+        this.id = generateId();
     }
 
     public int getPrioridad() {
         return prioridad;
     }
 
-    public String getId() { return id; }
+    public String getId() {
+        return id;
+    }
 
     public Paciente getPaciente() {
         return paciente;
@@ -34,10 +38,12 @@ public class Turno implements Comparable<Turno> {
         return medico;
     }
 
-    public Especialidad getEspecialidad() { return especialidad; }
+    public Especialidad getEspecialidad() {
+        return especialidad;
+    }
 
-    public LocalDateTime getFechaHora() {
-        return fechaHora;
+    public String getFechaHora() {
+        return fechaHora.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
     }
 
     @Override
@@ -47,6 +53,6 @@ public class Turno implements Comparable<Turno> {
 
     @Override
     public String toString() {
-        return "[" + fechaHora + "] " + paciente.getNombre() + " con Dr. " + medico.getNombre() + " (prioridad: " + prioridad + ")";
+        return "| " + fechaHora.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) + " - Turno de " + paciente.getNombre() + " con Dr. " + medico.getNombre() + " (prioridad: " + prioridad + ")";
     }
 }
