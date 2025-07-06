@@ -10,14 +10,14 @@ public class Medico {
     private String nombre;
     private String idEspecialidad;
     private String id;
-    private PriorityQueue<Turno> turnos;
-    private Stack<Turno> historicoTurnos;
+    private PriorityQueue<AtencionGuardia> atencionesGuardia;
+    private Stack<AtencionGuardia> historicoTurnos;
 
     public Medico(String nombre, String idEspecialidad) {
         this.nombre = nombre;
         this.idEspecialidad = idEspecialidad;
         this.id = generateId();
-        this.turnos = new PriorityQueue<>();
+        this.atencionesGuardia = new PriorityQueue<>();
         this.historicoTurnos = new Stack<>();
     }
 
@@ -33,47 +33,47 @@ public class Medico {
         return idEspecialidad;
     }
 
-    public PriorityQueue<Turno> getTurnos() {
-        return turnos;
+    public PriorityQueue<AtencionGuardia> getTurnos() {
+        return atencionesGuardia;
     }
 
-    public Stack<Turno> getHistoricoTurnos() { return historicoTurnos; }
+    public Stack<AtencionGuardia> getHistoricoTurnos() { return historicoTurnos; }
 
-    public void agregarTurno(Turno turno) {
-        turnos.offer(turno);
+    public void agregarTurno(AtencionGuardia atencionGuardia) {
+        atencionesGuardia.offer(atencionGuardia);
     }
 
-    public Turno atenderPrimerTurno() {
-        historicoTurnos.push(turnos.peek());
-        return turnos.poll();
+    public AtencionGuardia atenderPrimerTurno() {
+        historicoTurnos.push(atencionesGuardia.peek());
+        return atencionesGuardia.poll();
     }
 
-    public boolean eliminarTurno(Turno turno) {
-        return turnos.remove(turno);
+    public boolean eliminarTurno(AtencionGuardia atencionGuardia) {
+        return atencionesGuardia.remove(atencionGuardia);
     }
 
     public void mostrarTurnosPendientes() {
-        PriorityQueue<Turno> auxiliarTurnos = new PriorityQueue<Turno>(turnos);
+        PriorityQueue<AtencionGuardia> auxiliarAtencionesGuardia = new PriorityQueue<AtencionGuardia>(atencionesGuardia);
 
-        if (auxiliarTurnos.isEmpty()) {
+        if (auxiliarAtencionesGuardia.isEmpty()) {
             System.out.println("| El médico no tiene turnos.");
         } else {
             do {
-                Turno turnoSacado = auxiliarTurnos.poll();
-                System.out.println("| " + turnoSacado.toString());
-            } while (!auxiliarTurnos.isEmpty());
+                AtencionGuardia atencionGuardiaSacado = auxiliarAtencionesGuardia.poll();
+                System.out.println("| " + atencionGuardiaSacado.toString());
+            } while (!auxiliarAtencionesGuardia.isEmpty());
         }
     }
 
     public void mostrarTurnosHistoricos() {
-        Stack<Turno> auxiliarTurnos = new Stack<>(historicoTurnos);
+        Stack<AtencionGuardia> auxiliarTurnos = new Stack<>(historicoTurnos);
 
         if (auxiliarTurnos.isEmpty()) {
             System.out.println("| El médico aún no ha tomado ningún turno.");
         } else {
             do {
-                Turno turnoSacado = auxiliarTurnos.pop();
-                System.out.println("| " + turnoSacado.toString());
+                AtencionGuardia atencionGuardiaSacado = auxiliarTurnos.pop();
+                System.out.println("| " + atencionGuardiaSacado.toString());
             } while (!auxiliarTurnos.isEmpty());
         }
     }

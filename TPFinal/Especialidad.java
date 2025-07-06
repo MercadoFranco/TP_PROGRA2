@@ -3,19 +3,20 @@ package TPFinal;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static TPFinal.Utils.Sintoma;
 import static TPFinal.Utils.generateId;
 
 public class Especialidad {
     private Map<String, Medico> medicos;
     private String nombre;
     private String id;
-    private PriorityQueue<Turno> turnos;
+    private PriorityQueue<AtencionGuardia> atencionesGuardia;
 
     public Especialidad(String nombre) {
         this.nombre = nombre;
         this.id = generateId();
         this.medicos = new HashMap<>();
-        this.turnos = new PriorityQueue<>();
+        this.atencionesGuardia = new PriorityQueue<>();
     }
 
     public String getId() {
@@ -49,15 +50,15 @@ public class Especialidad {
 
     public boolean eliminarMedico(String idMedico) {
         if (medicos.containsKey(idMedico)) {
-            Collection<Turno> turnosDelMedico = medicos.get(idMedico).getTurnos();
+            Collection<AtencionGuardia> turnosDelMedico = medicos.get(idMedico).getTurnos();
             medicos.remove(idMedico);
-            turnos.removeAll(turnosDelMedico);
+            atencionesGuardia.removeAll(turnosDelMedico);
             return true;
         }
         return false;
     }
 
-    public Turno agregarTurno(Paciente paciente, int prioridad) {
+    public AtencionGuardia agregarTurno(Paciente paciente, int prioridad, Set<Sintoma> sintomas) {
         if (medicos.isEmpty()) {
             return null;
         }
@@ -78,52 +79,52 @@ public class Especialidad {
         }
 
         LocalDateTime fechaActual = LocalDateTime.now();
-        Turno nuevoTurno = new Turno(paciente, medicoConMenosTurnos, this, fechaActual, prioridad);
-        medicoConMenosTurnos.agregarTurno(nuevoTurno);
-        turnos.offer(nuevoTurno);
-        return nuevoTurno;
+        AtencionGuardia nuevoAtencionesGuardia = new AtencionGuardia(paciente, medicoConMenosTurnos, this, fechaActual, prioridad, sintomas);
+        medicoConMenosTurnos.agregarTurno(nuevoAtencionesGuardia);
+        atencionesGuardia.offer(nuevoAtencionesGuardia);
+        return nuevoAtencionesGuardia;
     }
 
-    public Turno atenderPrimerTurno() {
-        if (turnos.isEmpty()) {
+    public AtencionGuardia atenderPrimerTurno() {
+        if (atencionesGuardia.isEmpty()) {
             return null;
         }
 
-        Turno turnoAtendido = turnos.poll();
-        if (turnoAtendido != null) {
-            Medico medicoQueAtendio = turnoAtendido.getMedico();
+        AtencionGuardia atencionGuardiaAtendido = atencionesGuardia.poll();
+        if (atencionGuardiaAtendido != null) {
+            Medico medicoQueAtendio = atencionGuardiaAtendido.getMedico();
             medicoQueAtendio.atenderPrimerTurno();
-            return turnoAtendido;
+            return atencionGuardiaAtendido;
         }
 
         return null;
     }
 
-    public boolean eliminarTurno(Turno turno) {
-        if (!turnos.contains(turno)) {
+    public boolean eliminarTurno(AtencionGuardia atencionGuardia) {
+        if (!atencionesGuardia.contains(atencionGuardia)) {
             return false;
         }
 
-        turnos.remove(turno);
+        atencionesGuardia.remove(atencionGuardia);
         return true;
     }
 
-    public boolean cancelarTurno(Turno turno) {
-        if (!turnos.contains(turno)) {
+    public boolean cancelarTurno(AtencionGuardia atencionGuardia) {
+        if (!atencionesGuardia.contains(atencionGuardia)) {
             System.out.println("no hay turno");
             return false;
         }
 
-        Medico medico = turno.getMedico();
-        if (medico.eliminarTurno(turno)) {
-            turnos.remove(turno);
+        Medico medico = atencionGuardia.getMedico();
+        if (medico.eliminarTurno(atencionGuardia)) {
+            atencionesGuardia.remove(atencionGuardia);
             return true;
         }
 
         return false;
     }
 
-    public PriorityQueue<Turno> getTurnos() {
-        return turnos;
+    public PriorityQueue<AtencionGuardia> getTurnos() {
+        return atencionesGuardia;
     }
 }

@@ -2,24 +2,28 @@ package TPFinal;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Set;
 
+import static TPFinal.Utils.Sintoma;
 import static TPFinal.Utils.generateId;
 
-public class Turno implements Comparable<Turno> {
+public class AtencionGuardia implements Comparable<AtencionGuardia> {
     private Paciente paciente;
     private Medico medico;
     private Especialidad especialidad;
     private String id;
     private LocalDateTime fechaHora;
     private int prioridad; // 1 = urgente, 2 = normal, 3 = control
+    private Set<Sintoma> sintomasPaciente;
 
-    public Turno(Paciente paciente, Medico medico, Especialidad especialidad, LocalDateTime fechaHora, int prioridad) {
+    public AtencionGuardia(Paciente paciente, Medico medico, Especialidad especialidad, LocalDateTime fechaHora, int prioridad, Set<Sintoma> sintomasPaciente) {
         this.paciente = paciente;
         this.medico = medico;
         this.especialidad = especialidad;
         this.fechaHora = fechaHora;
         this.prioridad = prioridad;
         this.id = generateId();
+        this.sintomasPaciente = sintomasPaciente;
     }
 
     public int getPrioridad() {
@@ -46,8 +50,12 @@ public class Turno implements Comparable<Turno> {
         return fechaHora.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
     }
 
+    public Set<Sintoma> getSintomasPaciente() {
+        return sintomasPaciente;
+    }
+
     @Override
-    public int compareTo(Turno otro) {
+    public int compareTo(AtencionGuardia otro) {
         return Integer.compare(this.prioridad, otro.prioridad);
     }
 
