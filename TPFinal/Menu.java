@@ -326,10 +326,14 @@ public class Menu {
 
     public static void eliminarMedico(GestorGuardia gestor, Scanner sc) {
         Medico medicoElegido = elegirMedico(sc, gestor, "Elija el médico que desea eliminar");
+        if (medicoElegido == null) {
+            System.out.println("Error al elegir médico.");
+            return;
+        }
 
-        if (medicoElegido != null && gestor.eliminarMedico(medicoElegido.getIdEspecialidad(), medicoElegido.getId())) {
-            System.out.println("¡El médico ha sido eliminado con éxito!");
-        } else {
+        gestor.eliminarMedicoYReasignar(medicoElegido.getIdEspecialidad(), medicoElegido.getId());
+
+        if (!gestor.eliminarMedico(medicoElegido.getIdEspecialidad(), medicoElegido.getId())) {
             System.out.println("El médico no ha sido eliminado.");
         }
     }
