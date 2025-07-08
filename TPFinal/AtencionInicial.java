@@ -6,14 +6,14 @@ import static TPFinal.Utils.generateId;
 
 public class AtencionInicial {
     private String id;
-    private Paciente paciente;
+    private String idPaciente;
     private LocalDateTime fechaHoraAsignacion;
     private LocalDateTime fechaHoraAtendido;
     private String numero;
 
-    public AtencionInicial(Paciente paciente) {
+    public AtencionInicial(String idPaciente) {
         this.id = generateId();
-        this.paciente = paciente;
+        this.idPaciente = idPaciente;
         this.fechaHoraAsignacion = LocalDateTime.now();
     }
 
@@ -25,8 +25,8 @@ public class AtencionInicial {
         return id;
     }
 
-    public Paciente getPaciente() {
-        return paciente;
+    public String getIdPaciente() {
+        return idPaciente;
     }
 
     public LocalDateTime getFechaHoraAsignacion() {

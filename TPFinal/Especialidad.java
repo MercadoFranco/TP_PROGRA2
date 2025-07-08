@@ -58,7 +58,7 @@ public class Especialidad {
         return false;
     }
 
-    public AtencionGuardia agregarTurno(Paciente paciente, int prioridad, Set<Sintoma> sintomas) {
+    public AtencionGuardia agregarTurno(String idPaciente, int prioridad, Set<Sintoma> sintomas) {
         if (medicos.isEmpty()) {
             return null;
         }
@@ -79,7 +79,7 @@ public class Especialidad {
         }
 
         LocalDateTime fechaActual = LocalDateTime.now();
-        AtencionGuardia nuevoAtencionesGuardia = new AtencionGuardia(paciente, medicoConMenosTurnos, this, fechaActual, prioridad, sintomas);
+        AtencionGuardia nuevoAtencionesGuardia = new AtencionGuardia(idPaciente, medicoConMenosTurnos.getId(), id, fechaActual, prioridad, sintomas);
         medicoConMenosTurnos.agregarTurno(nuevoAtencionesGuardia);
         atencionesGuardia.offer(nuevoAtencionesGuardia);
         return nuevoAtencionesGuardia;
@@ -92,7 +92,7 @@ public class Especialidad {
 
         AtencionGuardia atencionGuardiaAtendido = atencionesGuardia.poll();
         if (atencionGuardiaAtendido != null) {
-            Medico medicoQueAtendio = atencionGuardiaAtendido.getMedico();
+            Medico medicoQueAtendio = medicos.get(atencionGuardiaAtendido.getIdMedico());
             medicoQueAtendio.atenderPrimerTurno();
             return atencionGuardiaAtendido;
         }
@@ -115,7 +115,7 @@ public class Especialidad {
             return false;
         }
 
-        Medico medico = atencionGuardia.getMedico();
+        Medico medico = medicos.get(atencionGuardia.getIdMedico());
         if (medico.eliminarTurno(atencionGuardia)) {
             atencionesGuardia.remove(atencionGuardia);
             return true;

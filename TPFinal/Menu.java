@@ -158,7 +158,9 @@ public class Menu {
         System.out.println(titulo);
 
         for (int i = 0; i < atencionesGuardia.length; i++) {
-            System.out.println((i + 1) + ") Turno para " + atencionesGuardia[i].getPaciente().getNombre() + " a las " + atencionesGuardia[i].getFechaHora() + " con " + atencionesGuardia[i].getMedico().getNombre() + " ");
+            Paciente paciente = gestor.getPaciente(atencionesGuardia[i].getIdPaciente());
+            Medico medico = especialidad.getMedico(atencionesGuardia[i].getIdMedico());
+            System.out.println((i + 1) + ") Turno para " + paciente.getNombre() + " a las " + atencionesGuardia[i].getFechaHora() + " con " + medico.getNombre() + " ");
         }
 
         System.out.println("0) Salir");
@@ -347,7 +349,7 @@ public class Menu {
             return;
         }
 
-        AtencionInicial atencionInicial = gestor.solicitarAtencionInicial(paciente);
+        AtencionInicial atencionInicial = gestor.solicitarAtencionInicial(dniPaciente);
         if (atencionInicial != null) {
             int pendientes = gestor.getFilaAtencionInicial().size() - 1;
             System.out.println("El paciente ha sido agregado a la cola para el pre diagnóstico. Actualmente hay " + pendientes + " personas adelante en la fila");
@@ -358,12 +360,13 @@ public class Menu {
 
     public static void atenderPreDiagnostico(GestorGuardia gestor, Scanner sc) {
         AtencionInicial atendido = gestor.atenderAtencionInicial();
-        if (atendido == null || atendido.getPaciente() == null) {
+        if (atendido == null || gestor.getPaciente(atendido.getIdPaciente()) == null) {
             System.out.println("No hay ninguna persona en la fila.");
             return;
         }
 
-        Set<Sintoma> sintomas = obtenerSintomas(sc, ("¿Qué síntomas presenta el paciente " + atendido.getPaciente().getNombre() + "?"));
+        Paciente paciente = gestor.getPaciente(atendido.getIdPaciente());
+        Set<Sintoma> sintomas = obtenerSintomas(sc, ("¿Qué síntomas presenta el paciente " + paciente.getNombre() + "?"));
 
         if (sintomas.isEmpty()) {
             System.out.println("El paciente no cuenta con síntomas, cancelando operación.");
@@ -381,28 +384,30 @@ public class Menu {
 
             System.out.println("¿Asignar la indicada por el sistema? (S/N) ");
             String opcion = sc.nextLine();
+            String idEspecialidad = enfermedadProbable.getIdEspecialidadAsociada();
             if (opcion.equalsIgnoreCase("S")) {
-                AtencionGuardia generada = gestor.solicitarAtencionEspecialidad(atendido.getPaciente().getDni(), enfermedadProbable.getEspecialidadAsociada().getId(), enfermedadProbable.getPrioridad());
-                System.out.print("Se ha añadido al paciente a la cola de la especialidad " + generada.getEspecialidad().getNombre());
+                AtencionGuardia generada = gestor.solicitarAtencionEspecialidad(paciente.getDni(), idEspecialidad, enfermedadProbable.getPrioridad(), sintomas);
+                Especialidad especialidad = gestor.getEspecialidades().get(idEspecialidad);
+                System.out.print("Se ha añadido al paciente a la cola de la especialidad " + especialidad.getNombre());
                 System.out.print(" con prioridad " + generada.getPrioridad());
-                System.out.print(" y los siguientes síntomas: " + generada.getSintomas());
+                System.out.print(" y los siguientes síntomas: " + generada.getSintomasPaciente());
                 return;
             }
 
             System.out.println("¿Desea ingresar manualmente la especialidad y prioridad? (S/N)");
             opcion = sc.nextLine();
             if (opcion.equalsIgnoreCase("S")) {
-                agregarAtencionEspecialidad(gestor, sc, atendido.getPaciente());
+                agregarAtencionEspecialidad(gestor, sc, paciente.getDni());
                 return;
             }
 
             System.out.println("Opción inválida.");
         } else {
-            agregarAtencionEspecialidad(gestor, sc, atendido.getPaciente());
+            agregarAtencionEspecialidad(gestor, sc, paciente.getDni());
         }
     }
 
-    public static void agregarAtencionEspecialidad(GestorGuardia gestor, Scanner sc, Paciente paciente) {
+    public static void agregarAtencionEspecialidad(GestorGuardia gestor, Scanner sc, String idPaciente) {
         Especialidad especialidadElegida = elegirEspecialidad(sc, gestor, "¿A qué especialidad desea asignarlo?");
         if (especialidadElegida == null) {
             System.out.println("Especialidad inválida, el paciente no ha sido agregado a la cola.");
@@ -423,9 +428,10 @@ public class Menu {
             return;
         }
 
-        AtencionGuardia atencionGuardiaGenerado = gestor.solicitarAtencionEspecialidad(paciente.getDni(), especialidadElegida.getId(), prioridad);
+        AtencionGuardia atencionGuardiaGenerado = gestor.solicitarAtencionEspecialidad(idPaciente, especialidadElegida.getId(), prioridad, null);
         if (atencionGuardiaGenerado != null) {
-            System.out.println("Se agregó a la cola una consulta con el doctor " + atencionGuardiaGenerado.getMedico().getNombre() + " con éxito con id " + atencionGuardiaGenerado.getId() + "!");
+            Medico medico = especialidadElegida.getMedico(atencionGuardiaGenerado.getIdMedico());
+            System.out.println("Se agregó a la cola una consulta con el doctor " + medico.getNombre() + " con éxito con id " + atencionGuardiaGenerado.getId() + "!");
         } else {
             System.out.println("Ocurrió un error y el paciente no ha sido agregado. Por favor intente nuevamente más tarde.");
         }
@@ -444,8 +450,11 @@ public class Menu {
         }
 
         AtencionGuardia atencionGuardiaAtendido = gestor.atenderAtencionEspecialidad(especialidadElegida.getId());
+
         if (atencionGuardiaAtendido != null) {
-            System.out.println("El turno del paciente " + atencionGuardiaAtendido.getPaciente().getNombre() + " con el doctor " + atencionGuardiaAtendido.getMedico().getNombre() + " de prioridad " + atencionGuardiaAtendido.getPrioridad() + " ha sido atendido con éxito y eliminado de la cola.");
+            Paciente paciente = gestor.getPaciente(atencionGuardiaAtendido.getIdPaciente());
+            Medico medico = especialidadElegida.getMedico(atencionGuardiaAtendido.getIdMedico());
+            System.out.println("El turno del paciente " + paciente.getNombre() + " con el doctor " + medico.getNombre() + " de prioridad " + atencionGuardiaAtendido.getPrioridad() + " ha sido atendido con éxito y eliminado de la cola.");
         } else {
             System.out.println("Ocurrió un error. Por favor intente nuevamente.");
         }
@@ -496,7 +505,10 @@ public class Menu {
             return;
         }
 
-        System.out.println("El turno de " + atencionGuardiaRecuperado.getPaciente().getNombre() + " con el doctor " + atencionGuardiaRecuperado.getMedico().getNombre() + " de " + atencionGuardiaRecuperado.getEspecialidad().getNombre() + " ha sido recuperado con éxito y fue agregado nuevamente a la cola.");
+        Especialidad especialidad = gestor.getEspecialidades().get(atencionGuardiaRecuperado.getIdEspecialidad());
+        Medico medico = especialidad.getMedico(atencionGuardiaRecuperado.getIdMedico());
+
+        System.out.println("El turno del paciente con DNI " + atencionGuardiaRecuperado.getIdPaciente() + " con el doctor " + medico.getNombre() + " de " + especialidad.getNombre() + " ha sido recuperado con éxito y fue agregado nuevamente a la cola.");
     }
 
     // ------------------------------
@@ -514,7 +526,8 @@ public class Menu {
         }
 
         filaActual.forEach(atencionInicial -> {
-            System.out.println("| " + atencionInicial.getId() + " - Turno de " + atencionInicial.getPaciente().getNombre() + " sacado a las " + atencionInicial.getFechaHoraAsignacion().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+            Paciente paciente = gestor.getPaciente(atencionInicial.getIdPaciente());
+            System.out.println("| " + atencionInicial.getId() + " - Turno de " + paciente.getNombre() + " sacado a las " + atencionInicial.getFechaHoraAsignacion().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
         });
     }
 
@@ -806,10 +819,10 @@ public class Menu {
         gestor.registrarPaciente(paciente4);
         gestor.registrarPaciente(paciente5);
 
-        gestor.agregarEnfermedad("Accidente Cerebrovascular", Set.of(Sintoma.DOLOR_CABEZA, Sintoma.MAREO, Sintoma.SANGRADO_NARIZ, Sintoma.PERDIDA_CONOCIMIENTO), cardiologia, 5);
-        gestor.agregarEnfermedad("Paro Cardiaco", Set.of(Sintoma.DOLOR_PECHO, Sintoma.MAREO, Sintoma.FATIGA), cardiologia, 5);
-        gestor.agregarEnfermedad("Infección Auricular", Set.of(Sintoma.DOLOR_CABEZA, Sintoma.PERDIDA_OIDO, Sintoma.FIEBRE), otorrinolaringologia, 1);
-        gestor.agregarEnfermedad("Me acabo de dar cuenta que no conozco muchas enfermedades", Set.of(Sintoma.CONGESTION, Sintoma.DOLOR_CABEZA), traumatologia, 1);
+        gestor.agregarEnfermedad("Accidente Cerebrovascular", Set.of(Sintoma.DOLOR_CABEZA, Sintoma.MAREO, Sintoma.SANGRADO_NARIZ, Sintoma.PERDIDA_CONOCIMIENTO), cardiologia.getId(), 5);
+        gestor.agregarEnfermedad("Paro Cardiaco", Set.of(Sintoma.DOLOR_PECHO, Sintoma.MAREO, Sintoma.FATIGA), cardiologia.getId(), 5);
+        gestor.agregarEnfermedad("Infección Auricular", Set.of(Sintoma.DOLOR_CABEZA, Sintoma.PERDIDA_OIDO, Sintoma.FIEBRE), otorrinolaringologia.getId(), 1);
+        gestor.agregarEnfermedad("Me acabo de dar cuenta que no conozco muchas enfermedades", Set.of(Sintoma.CONGESTION, Sintoma.DOLOR_CABEZA), traumatologia.getId(), 1);
 
     }
 

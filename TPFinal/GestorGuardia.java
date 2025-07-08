@@ -61,9 +61,8 @@ public class GestorGuardia {
             List<String> keysEspecialidades = getEspecialidades().keySet().stream().toList();
             keysEspecialidades.forEach(key -> {
                 Especialidad especialidad = especialidades.get(key);
-                especialidad.getTurnos().removeIf(t -> t.getPaciente().getDni().equals(dni));
+                especialidad.getTurnos().removeIf(t -> t.getIdPaciente().equals(dni));
             });
-
             return true;
         } catch (NullPointerException e) {
             return false;
@@ -74,9 +73,9 @@ public class GestorGuardia {
     // ------Gestión Enfermedades------
     // --------------------------------
 
-    public boolean agregarEnfermedad(String nombre, Set<Sintoma> sintomas, Especialidad especialidad, int prioridad) {
+    public boolean agregarEnfermedad(String nombre, Set<Sintoma> sintomas, String idEspecialidad, int prioridad) {
         try {
-            Enfermedad nuevaEnfermedad = new Enfermedad(nombre, sintomas, especialidad, prioridad);
+            Enfermedad nuevaEnfermedad = new Enfermedad(nombre, sintomas, idEspecialidad, prioridad);
             registroEnfermedades.add(nuevaEnfermedad);
             return true;
         } catch (NullPointerException e) {
@@ -124,14 +123,67 @@ public class GestorGuardia {
         }
     }
 
+    public boolean eliminarMedicoYReasignar(String idEspecialidad, String idMedico) {
+        Especialidad especialidad = especialidades.get(idEspecialidad);
+        if (especialidad == null) {
+            System.out.println("La especialidad no existe.");
+            return false;
+        }
+
+        Medico medicoEliminado = especialidad.getMedico(idMedico);
+        if (medicoEliminado == null) {
+            System.out.println("El médico no existe.");
+            return false;
+        }
+
+        List<Medico> medicosDisponibles = new ArrayList<>();
+        for (Medico m : especialidad.getMedicos().values()) {
+            if (!m.getId().equals(idMedico)) {
+                medicosDisponibles.add(m);
+            }
+        }
+
+        if (medicosDisponibles.isEmpty()) {
+            System.out.println("No hay otros médicos disponibles en la especialidad " + especialidad.getId());
+            return false;
+        }
+
+        PriorityQueue<AtencionGuardia> turnosPendientes = medicoEliminado.getTurnos();
+
+        while (!turnosPendientes.isEmpty()) {
+            AtencionGuardia turno = turnosPendientes.poll();
+            Medico menosCargado = buscarMedicoConMenosTurnos(medicosDisponibles);
+            turno.setMedico(menosCargado);
+            menosCargado.agregarTurno(turno);
+        }
+
+        especialidad.eliminarMedico(idMedico);
+        System.out.println("Médico eliminado y turnos reasignados correctamente.");
+        return true;
+    }
+
+    private Medico buscarMedicoConMenosTurnos(List<Medico> lista) {
+        Medico seleccionado = null;
+        int min = Integer.MAX_VALUE;
+        for (Medico m : lista) {
+            int size = m.getTurnos().size();
+            if (size < min) {
+                min = size;
+                seleccionado = m;
+            }
+        }
+        return seleccionado;
+    }
+
     // --------------------------------
     // ------Gestión de Atención-------
     // ------------Inicial-------------
     // --------------------------------
 
-    public AtencionInicial solicitarAtencionInicial(Paciente paciente) {
+    public AtencionInicial solicitarAtencionInicial(String idPaciente) {
+        Paciente paciente = pacientes.getOrDefault(idPaciente, null);
         if (paciente != null) {
-            AtencionInicial nuevaSolicitud = new AtencionInicial(paciente);
+            AtencionInicial nuevaSolicitud = new AtencionInicial(idPaciente);
             filaEvaluacionInicial.add(nuevaSolicitud);
             return nuevaSolicitud;
         } else {
@@ -143,10 +195,8 @@ public class GestorGuardia {
         if (filaEvaluacionInicial.isEmpty()) {
             return null;
         }
-
         return filaEvaluacionInicial.poll();
     }
-
 
     // --------------------------------
     // -----Gestión de Atención--------
@@ -160,7 +210,6 @@ public class GestorGuardia {
             double pb = b.calcularProbabilidad(sintomas);
             return Double.compare(pb, pa);
         });
-
         return enfermedadesOrdenadas;
     }
 
@@ -170,11 +219,9 @@ public class GestorGuardia {
     }
 
     public AtencionGuardia solicitarAtencionEspecialidad(String dniPaciente, String idEspecialidad, int prioridad, Set<Sintoma> sintomas) {
-        Paciente paciente = pacientes.get(dniPaciente);
         Especialidad especialidad = especialidades.get(idEspecialidad);
-
-        if (paciente != null && especialidad != null) {
-            return especialidad.agregarTurno(paciente, prioridad, sintomas);
+        if (pacientes.get(dniPaciente) != null && especialidad != null) {
+            return especialidad.agregarTurno(dniPaciente, prioridad, sintomas);
         } else {
             return null;
         }
@@ -182,79 +229,55 @@ public class GestorGuardia {
 
     public AtencionGuardia atenderAtencionEspecialidad(String idEspecialidad) {
         Especialidad especialidad = especialidades.get(idEspecialidad);
-        if (especialidad == null) {
-            System.out.println("La Especialidad no existe");
-            return null;
-        }
-
-        if (especialidad.getTurnos().isEmpty()) {
-            System.out.println("La especialidad no tiene turnos");
+        if (especialidad == null || especialidad.getTurnos().isEmpty()) {
             return null;
         }
 
         AtencionGuardia atencionGuardiaAtendido = especialidad.atenderPrimerTurno();
         if (atencionGuardiaAtendido != null) {
-            Paciente pacienteAtendido = atencionGuardiaAtendido.getPaciente();
+            Paciente pacienteAtendido = pacientes.get(atencionGuardiaAtendido.getIdPaciente());
+
             pacienteAtendido.agregarTurnoAlHistorial(atencionGuardiaAtendido);
         }
-
         return atencionGuardiaAtendido;
     }
 
     public AtencionGuardia atenderAtencionMedico(String idEspecialidad, String idMedico) {
         Especialidad especialidad = especialidades.get(idEspecialidad);
-
-        if (especialidad == null) {
-            return null;
-        }
+        if (especialidad == null) return null;
 
         Medico medico = especialidad.getMedico(idMedico);
-
-        if (medico == null || medico.getTurnos().isEmpty()) {
-            return null;
-        }
+        if (medico == null || medico.getTurnos().isEmpty()) return null;
 
         AtencionGuardia atencionGuardiaAtendido = medico.atenderPrimerTurno();
         if (atencionGuardiaAtendido != null) {
             especialidad.eliminarTurno(atencionGuardiaAtendido);
         }
-
         return atencionGuardiaAtendido;
     }
 
     public boolean cancelarTurno(AtencionGuardia atencionGuardia) {
-        Especialidad especialidad = atencionGuardia.getEspecialidad();
+        Especialidad especialidad = especialidades.get(atencionGuardia.getIdEspecialidad());
         if (especialidad.cancelarTurno(atencionGuardia)) {
             cancelacionesRecientes.push(atencionGuardia);
             return true;
         }
-
         return false;
     }
 
     public AtencionGuardia deshacerCancelacion() {
         if (!cancelacionesRecientes.isEmpty()) {
             AtencionGuardia atencionGuardia = cancelacionesRecientes.pop();
-
-            Paciente paciente = atencionGuardia.getPaciente();
             int prioridad = atencionGuardia.getPrioridad();
-            Especialidad especialidad = atencionGuardia.getEspecialidad();
+            Especialidad especialidad = especialidades.get(atencionGuardia.getIdEspecialidad());
             Set<Sintoma> sintomas = atencionGuardia.getSintomasPaciente();
-
-            especialidad.agregarTurno(paciente, prioridad, sintomas);
+            especialidad.agregarTurno(atencionGuardia.getIdPaciente(), prioridad, sintomas);
             return atencionGuardia;
         }
-
-        System.out.println("No hay turnos cancelados para recuperar.");
         return null;
     }
 
-    // ------------------------------
-
-
-    // ------------------------------
     // -----------Getters------------
-    // ------------------------------
 
     public Map<String, Especialidad> getEspecialidades() {
         return this.especialidades;
@@ -265,7 +288,7 @@ public class GestorGuardia {
     }
 
     public List<String> getEspecialidadesIds() {
-        return new ArrayList<String>(this.especialidades.keySet());
+        return new ArrayList<>(this.especialidades.keySet());
     }
 
     public Queue<AtencionInicial> getFilaAtencionInicial() {
@@ -276,4 +299,17 @@ public class GestorGuardia {
         return registroEnfermedades;
     }
 
+    // -----------Setters---------
+
+    public void setPacientes(Map<String, Paciente> pacientes) {
+        this.pacientes = pacientes;
+    }
+
+    public void setEspecialidades(Map<String, Especialidad> especialidades) {
+        this.especialidades = especialidades;
+    }
+
+    public void setRegistroEnfermedades(List<Enfermedad> registroEnfermedades) {
+        this.registroEnfermedades = registroEnfermedades;
+    }
 }

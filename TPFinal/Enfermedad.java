@@ -7,14 +7,14 @@ import TPFinal.Utils.Sintoma;
 
 public class Enfermedad {
     private String nombre;
-    private Especialidad especialidadAsociada;
+    private String idEspecialidadAsociada;
     private Set<Sintoma> sintomas;
     private int prioridad;
 
-    public Enfermedad(String nombre, Set<Sintoma> sintomas, Especialidad especialidad, int prioridad) {
+    public Enfermedad(String nombre, Set<Sintoma> sintomas, String idEspecialidad, int prioridad) {
         this.nombre = nombre;
         this.sintomas = sintomas;
-        this.especialidadAsociada = especialidad;
+        this.idEspecialidadAsociada = idEspecialidad;
         this.prioridad = prioridad;
     }
 
@@ -36,12 +36,16 @@ public class Enfermedad {
         return nombre;
     }
 
+    public Set<Sintoma> getSintomas() {
+        return sintomas;
+    }
+
     public int getPrioridad() {
         return prioridad;
     }
 
-    public Especialidad getEspecialidadAsociada() {
-        return especialidadAsociada;
+    public String getIdEspecialidadAsociada() {
+        return idEspecialidadAsociada;
     }
 
 }
