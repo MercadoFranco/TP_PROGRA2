@@ -1,5 +1,10 @@
 package TPFinal.TDAs;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class Stack<T> {
     private Node<T> top;
 
@@ -52,17 +57,30 @@ public class Stack<T> {
         return top.data;
     }
 
+    @JsonIgnore
     public boolean isEmpty() {
         return top == null;
     }
 
-    public void printStack() {
+    public List<T> getElementsAsList() {
+        List<T> elements = new ArrayList<>();
         Node<T> current = top;
-        System.out.print("Top -> ");
+        java.util.Stack<T> tempStack = new java.util.Stack<>();
         while (current != null) {
-            System.out.print(current.data + " -> ");
+            tempStack.push(current.data);
             current = current.next;
         }
-        System.out.println("null");
+        while (!tempStack.isEmpty()) {
+            elements.add(tempStack.pop());
+        }
+        return elements;
     }
+
+    public void setElementsAsList(List<T> elements) {
+        this.top = null;
+        for (int i = elements.size() - 1; i >= 0; i--) {
+            this.push(elements.get(i));
+        }
+    }
+
 }

@@ -1,0 +1,26 @@
+{
+  "081113373110000" : {
+    "medicos" : {
+      "081113451340001" : {
+        "nombre" : "Cardio Logo",
+        "idEspecialidad" : "081113373110000",
+        "id" : "081113451340001",
+        "atencionesGuardia" : [ ],
+        "historicoTurnos" : {
+          "elementsAsList" : [ {
+            "idPaciente" : "1",
+            "idMedico" : "081113451340001",
+            "idEspecialidad" : "081113373110000",
+            "id" : "081159547300001",
+            "prioridad" : 4,
+            "sintomasPaciente" : [ "MAREO", "PERDIDA_CONOCIMIENTO", "SANGRADO_NARIZ" ]
+          } ]
+        }
+      }
+    },
+    "nombre" : "Cardiología",
+    "id" : "081113373110000",
+    "medicosIds" : [ "081113451340001" ],
+    "turnos" : [ ]
+  }
+}

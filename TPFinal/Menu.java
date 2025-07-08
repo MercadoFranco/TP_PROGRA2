@@ -160,7 +160,7 @@ public class Menu {
         for (int i = 0; i < atencionesGuardia.length; i++) {
             Paciente paciente = gestor.getPaciente(atencionesGuardia[i].getIdPaciente());
             Medico medico = especialidad.getMedico(atencionesGuardia[i].getIdMedico());
-            System.out.println((i + 1) + ") Turno para " + paciente.getNombre() + " a las " + atencionesGuardia[i].getFechaHora() + " con " + medico.getNombre() + " ");
+            System.out.println((i + 1) + ") Turno para " + paciente.getNombre() + " con " + medico.getNombre() + " ");
         }
 
         System.out.println("0) Salir");
@@ -241,6 +241,7 @@ public class Menu {
         String nombrePaciente = sc.nextLine();
 
         Paciente nuevoPaciente = new Paciente(nombrePaciente, dniPaciente);
+        System.out.println("PACIENTE NEUVO:  " + nuevoPaciente);
         if (gestor.registrarPaciente(nuevoPaciente)) {
             System.out.println("¡El paciente " + nombrePaciente + " ha sido agregado con éxito!");
         } else {
@@ -375,7 +376,6 @@ public class Menu {
 
         List<Enfermedad> enfermedadesPosibles = gestor.obtenerCoincidenciaEnfermedades(sintomas);
         Enfermedad enfermedadProbable = gestor.obtenerEnfermedadMasProbable(sintomas);
-        // TODO: Esto es para probar nomás, después reemplazar el obtenerCoincidenciaEnfermedades por la más probable nomás (obtenerEnfermedadMasProbable)
         if (!enfermedadesPosibles.isEmpty() && enfermedadProbable != null) {
             System.out.println("El sistema dice que en base a esos síntomas, la enfermedad más probables es:");
             for (Enfermedad enfermedad : enfermedadesPosibles) {
@@ -384,13 +384,15 @@ public class Menu {
 
             System.out.println("¿Asignar la indicada por el sistema? (S/N) ");
             String opcion = sc.nextLine();
-            String idEspecialidad = enfermedadProbable.getIdEspecialidadAsociada();
+            String idEspecialidad = enfermedadProbable.getIdEspecialidad();
             if (opcion.equalsIgnoreCase("S")) {
                 AtencionGuardia generada = gestor.solicitarAtencionEspecialidad(paciente.getDni(), idEspecialidad, enfermedadProbable.getPrioridad(), sintomas);
                 Especialidad especialidad = gestor.getEspecialidades().get(idEspecialidad);
                 System.out.print("Se ha añadido al paciente a la cola de la especialidad " + especialidad.getNombre());
                 System.out.print(" con prioridad " + generada.getPrioridad());
-                System.out.print(" y los siguientes síntomas: " + generada.getSintomasPaciente());
+                System.out.print(" y los siguientes síntomas: ");
+                generada.getSintomasPaciente().forEach(sintoma -> System.out.print(sintoma.getDescripcion() + ", "));
+                System.out.println("\n");
                 return;
             }
 
@@ -648,6 +650,95 @@ public class Menu {
         }
     }
 
+    public static void mostrarMenuGestionEnfermedades(GestorGuardia gestor, Scanner sc) {
+        int opcion;
+
+        clearScreen();
+
+        System.out.println("---------MENU GESTIÓN ENFERMEDADES---------\n");
+        System.out.println("1. Agregar una nueva enfermedad");
+        System.out.println("2. Eliminar una enfermedad");
+        System.out.println("3. Mostrar enfermedades");
+        System.out.println("0. Volver al inicio");
+
+        opcion = sc.nextInt();
+        sc.nextLine();
+
+        switch (opcion) {
+            case 1:
+                System.out.println("¿Cuál es el nombre de la nueva enfermedad?");
+                String nombre = sc.nextLine();
+                Set<Sintoma> sintomas = obtenerSintomas(sc, ("¿Qué síntomas presenta la enfermedad?"));
+                Especialidad especialidad = elegirEspecialidad(sc, gestor, "¿A qué especialidad pertenece?");
+                System.out.println("¿Cuál es la prioridad de la emergencia del paciente?\n1) Sin urgencia\n2) Urgencia Menor\n3) Urgencia\n4) Emergencia\n5) Resucitación");
+                int prioridad = sc.nextInt();
+                sc.nextLine();
+
+                if (especialidad == null) {
+                    System.out.println("Especialidad inválida, intente nuevamente.");
+                    return;
+                }
+
+                if (prioridad < 1 || prioridad > 5) {
+                    System.out.println("La prioridad ingresada no es valida. Intente nuevamente.");
+                    return;
+                }
+
+                if (gestor.agregarEnfermedad(nombre, sintomas, especialidad.getId(), prioridad)) {
+                    System.out.println("La enfermedad ha sido agregada con éxito.");
+                } else {
+                    System.out.println("La enfermedad no ha sido agregada, intente nuevamente.");
+                }
+
+                break;
+            case 2:
+                System.out.println("¿Qué enfermedad desea eliminar?");
+                List<Enfermedad> enfermedades = gestor.getEnfermedades();
+                for (int i = 0; i < enfermedades.size(); i++) {
+                    System.out.println((i + 1) + ". " + enfermedades.get(i).getNombre());
+                }
+                System.out.println("0. Volver al inicio");
+
+                int opcionEnfermedad = sc.nextInt();
+
+                if (opcionEnfermedad == 0) {
+                    return;
+                }
+
+                if (gestor.getEnfermedades().get(opcionEnfermedad - 1) == null) {
+                    System.out.println("Ocurrió un error al eliminar la enfermedad, intente nuevamente.");
+                    return;
+                }
+
+                gestor.eliminarEnfermedad(gestor.getEnfermedades().get(opcionEnfermedad - 1).getNombre());
+
+                break;
+            case 3:
+                List<Enfermedad> enfermedadesAMostrar = gestor.getEnfermedades();
+                if (enfermedadesAMostrar.isEmpty()) {
+                    System.out.println("Aún no hay enfermedades registradas.");
+                    return;
+                }
+
+                enfermedadesAMostrar.forEach(enfermedad -> {
+                    System.out.println(" _______________________");
+                    System.out.println("|  " + enfermedad.getNombre());
+                    System.out.println("|______________________");
+                    System.out.println("| Prioridad: " + enfermedad.getPrioridad());
+                    System.out.println("| Sintomas: " + enfermedad.getSintomas());
+                    System.out.println(" ______________________");
+                    System.out.println("\n");
+                });
+                break;
+            case 0:
+                System.out.println("Volviendo al menú principal.");
+                break;
+            default:
+                System.out.println("Opcion no valida.");
+                break;
+        }
+    }
+
     public static void mostrarMenuGestionEspecialidades(GestorGuardia gestor, Scanner sc) {
         int opcion;
 
@@ -758,6 +849,7 @@ public class Menu {
             System.out.println("2. Gestión de Especialidades");
             System.out.println("3. Gestión de Médicos");
             System.out.println("4. Gestión de Pacientes");
+            System.out.println("5. Gestión de Enfermedades");
             System.out.println("0. Salir");
 
             opcion = sc.nextInt();
@@ -776,7 +868,11 @@ public class Menu {
                 case 4:
                     mostrarMenuGestionPacientes(gestor, sc);
                     break;
+                case 5:
+                    mostrarMenuGestionEnfermedades(gestor, sc);
+                    break;
                 case 0:
+                    Persistencia.guardarTodo(gestor);
                     System.out.println("Gracias por usar la aplicación, son 40 usd.");
                     break;
                 default:
@@ -831,7 +927,9 @@ public class Menu {
         GestorGuardia gestor = new GestorGuardia();
         Scanner scanner = new Scanner(System.in);
 
-        generarDatosPrueba(gestor);
+        Persistencia.cargarTodo(gestor);
+        // generarDatosPrueba(gestor);
+
         mostrarMenuPrincipal(gestor, scanner);
     }
 }

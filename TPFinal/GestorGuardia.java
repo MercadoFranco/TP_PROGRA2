@@ -51,6 +51,7 @@ public class GestorGuardia {
             pacientes.put(paciente.getDni(), paciente);
             return true;
         } catch (NullPointerException e) {
+            System.out.println("ERROR: " + e);
             return false;
         }
     }
@@ -148,12 +149,12 @@ public class GestorGuardia {
             return false;
         }
 
-        PriorityQueue<AtencionGuardia> turnosPendientes = medicoEliminado.getTurnos();
+        PriorityQueue<AtencionGuardia> turnosPendientes = medicoEliminado.getAtencionesGuardia();
 
         while (!turnosPendientes.isEmpty()) {
             AtencionGuardia turno = turnosPendientes.poll();
             Medico menosCargado = buscarMedicoConMenosTurnos(medicosDisponibles);
-            turno.setMedico(menosCargado);
+            turno.setIdMedico(menosCargado.getId());
             menosCargado.agregarTurno(turno);
         }
 
@@ -166,7 +167,7 @@ public class GestorGuardia {
         Medico seleccionado = null;
         int min = Integer.MAX_VALUE;
         for (Medico m : lista) {
-            int size = m.getTurnos().size();
+            int size = m.getAtencionesGuardia().size();
             if (size < min) {
                 min = size;
                 seleccionado = m;
@@ -215,7 +216,11 @@ public class GestorGuardia {
 
     public Enfermedad obtenerEnfermedadMasProbable(Set<Sintoma> sintomas) {
         List<Enfermedad> enfermedadesProbables = obtenerCoincidenciaEnfermedades(sintomas);
-        return enfermedadesProbables.get(0);
+        if (enfermedadesProbables.isEmpty()) {
+            return null;
+        } else {
+            return enfermedadesProbables.get(0);
+        }
     }
 
     public AtencionGuardia solicitarAtencionEspecialidad(String dniPaciente, String idEspecialidad, int prioridad, Set<Sintoma> sintomas) {
@@ -247,7 +252,7 @@ public class GestorGuardia {
         if (especialidad == null) return null;
 
         Medico medico = especialidad.getMedico(idMedico);
-        if (medico == null || medico.getTurnos().isEmpty()) return null;
+        if (medico == null || medico.getAtencionesGuardia().isEmpty()) return null;
 
         AtencionGuardia atencionGuardiaAtendido = medico.atenderPrimerTurno();
         if (atencionGuardiaAtendido != null) {
@@ -281,6 +286,10 @@ public class GestorGuardia {
 
     public Map<String, Especialidad> getEspecialidades() {
         return this.especialidades;
+    }
+
+    public Map<String, Paciente> getPacientes() {
+        return this.pacientes;
     }
 
     public Paciente getPaciente(String dni) {

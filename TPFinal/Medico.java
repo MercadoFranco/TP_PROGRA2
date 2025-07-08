@@ -21,6 +21,14 @@ public class Medico {
         this.historicoTurnos = new Stack<>();
     }
 
+    public Medico() {
+        this.id = "";
+        this.nombre = "";
+        this.idEspecialidad = "";
+        this.atencionesGuardia = new PriorityQueue<>();
+        this.historicoTurnos = new Stack<>();
+    }
+
     public String getId() {
         return id;
     }
@@ -33,11 +41,31 @@ public class Medico {
         return idEspecialidad;
     }
 
-    public PriorityQueue<AtencionGuardia> getTurnos() {
+    public PriorityQueue<AtencionGuardia> getAtencionesGuardia() {
         return atencionesGuardia;
     }
 
-    public Stack<AtencionGuardia> getHistoricoTurnos() { return historicoTurnos; }
+    public Stack<AtencionGuardia> getHistoricoTurnos() {
+        return historicoTurnos;
+    }
+
+    public void setId(String id ) {
+        this.id = id;
+    }
+
+    public void setIdEspecialidad(String idEspecialidad) {
+        this.idEspecialidad = idEspecialidad;
+    }
+
+    public void setAtencionesGuardia(PriorityQueue<AtencionGuardia> atencionesGuardia) {
+        this.atencionesGuardia = atencionesGuardia;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+
 
     public void agregarTurno(AtencionGuardia atencionGuardia) {
         atencionesGuardia.offer(atencionGuardia);

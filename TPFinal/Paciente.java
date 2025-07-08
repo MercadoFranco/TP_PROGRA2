@@ -13,6 +13,12 @@ public class Paciente {
         this.historialTurnos = new Stack<AtencionGuardia>();
     }
 
+    public Paciente() {
+        this.nombre = "";
+        this.dni = "";
+        this.historialTurnos = new Stack<AtencionGuardia>();
+    }
+
     public String getDni() {
         return dni;
     }
@@ -40,5 +46,17 @@ public class Paciente {
 
     public void agregarTurnoAlHistorial(AtencionGuardia atencionGuardia) {
         historialTurnos.push(atencionGuardia);
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public void setDni(String dni) {
+        this.dni = dni;
+    }
+
+    public void setHistorialTurnos(Stack<AtencionGuardia> historialTurnos) {
+        this.historialTurnos = historialTurnos;
     }
 }

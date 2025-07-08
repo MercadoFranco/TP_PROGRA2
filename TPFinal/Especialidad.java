@@ -19,6 +19,13 @@ public class Especialidad {
         this.atencionesGuardia = new PriorityQueue<>();
     }
 
+    public Especialidad() {
+        this.nombre = "";
+        this.id = "";
+        this.medicos = new HashMap<>();
+        this.atencionesGuardia = new PriorityQueue<>();
+    }
+
     public String getId() {
         return id;
     }
@@ -39,6 +46,22 @@ public class Especialidad {
         return this.medicos;
     }
 
+    public void setMedicos(Map<String, Medico> medicos) {
+        this.medicos = medicos;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setAtencionesGuardia(PriorityQueue<AtencionGuardia> atencionesGuardia) {
+        this.atencionesGuardia = atencionesGuardia;
+    }
+
     public boolean registrarMedico(Medico medico) {
         String idMedico = medico.getId();
         if (!medicos.containsKey(idMedico)) {
@@ -50,7 +73,7 @@ public class Especialidad {
 
     public boolean eliminarMedico(String idMedico) {
         if (medicos.containsKey(idMedico)) {
-            Collection<AtencionGuardia> turnosDelMedico = medicos.get(idMedico).getTurnos();
+            Collection<AtencionGuardia> turnosDelMedico = medicos.get(idMedico).getAtencionesGuardia();
             medicos.remove(idMedico);
             atencionesGuardia.removeAll(turnosDelMedico);
             return true;
@@ -67,7 +90,7 @@ public class Especialidad {
         int minTurnos = Integer.MAX_VALUE;
 
         for (Medico medico : medicos.values()) {
-            int cantidadTurnos = medico.getTurnos().size();
+            int cantidadTurnos = medico.getAtencionesGuardia().size();
             if (cantidadTurnos < minTurnos) {
                 minTurnos = cantidadTurnos;
                 medicoConMenosTurnos = medico;
@@ -78,8 +101,7 @@ public class Especialidad {
             return null;
         }
 
-        LocalDateTime fechaActual = LocalDateTime.now();
-        AtencionGuardia nuevoAtencionesGuardia = new AtencionGuardia(idPaciente, medicoConMenosTurnos.getId(), id, fechaActual, prioridad, sintomas);
+        AtencionGuardia nuevoAtencionesGuardia = new AtencionGuardia(idPaciente, medicoConMenosTurnos.getId(), id, prioridad, sintomas);
         medicoConMenosTurnos.agregarTurno(nuevoAtencionesGuardia);
         atencionesGuardia.offer(nuevoAtencionesGuardia);
         return nuevoAtencionesGuardia;

@@ -1,0 +1,16 @@
+{
+  "1" : {
+    "nombre" : "Franco Mercado",
+    "dni" : "1",
+    "historialTurnos" : {
+      "elementsAsList" : [ {
+        "idPaciente" : "1",
+        "idMedico" : "081113451340001",
+        "idEspecialidad" : "081113373110000",
+        "id" : "081159547300001",
+        "prioridad" : 4,
+        "sintomasPaciente" : [ "MAREO", "SANGRADO_NARIZ", "PERDIDA_CONOCIMIENTO" ]
+      } ]
+    }
+  }
+}

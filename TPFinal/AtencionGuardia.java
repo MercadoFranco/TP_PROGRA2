@@ -12,15 +12,13 @@ public class AtencionGuardia implements Comparable<AtencionGuardia> {
     private String idMedico;
     private String idEspecialidad;
     private String id;
-    private LocalDateTime fechaHora;
     private int prioridad; // 1 = urgente, 2 = normal, 3 = control
     private Set<Sintoma> sintomasPaciente;
 
-    public AtencionGuardia(String idPaciente, String idMedico, String idEspecialidad, LocalDateTime fechaHora, int prioridad, Set<Sintoma> sintomasPaciente) {
+    public AtencionGuardia(String idPaciente, String idMedico, String idEspecialidad, int prioridad, Set<Sintoma> sintomasPaciente) {
         this.idPaciente = idPaciente;
         this.idMedico = idMedico;
         this.idEspecialidad = idEspecialidad;
-        this.fechaHora = fechaHora;
         this.prioridad = prioridad;
         this.id = generateId();
         this.sintomasPaciente = sintomasPaciente;
@@ -30,10 +28,18 @@ public class AtencionGuardia implements Comparable<AtencionGuardia> {
         this.idPaciente = idPaciente;
         this.idMedico = idMedico;
         this.idEspecialidad = idEspecialidad;
-        this.fechaHora = fechaHora;
         this.prioridad = prioridad;
         this.id = id;
         this.sintomasPaciente = sintomasPaciente;
+    }
+
+    public AtencionGuardia() {
+        this.idPaciente = "";
+        this.idMedico = "";
+        this.idEspecialidad = "";
+        this.prioridad = 0;
+        this.id = "";
+        this.sintomasPaciente = null;
     }
 
     public int getPrioridad() {
@@ -56,9 +62,6 @@ public class AtencionGuardia implements Comparable<AtencionGuardia> {
         return idEspecialidad;
     }
 
-    public String getFechaHora() {
-        return fechaHora.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
-    }
 
     public Set<Sintoma> getSintomasPaciente() {
         return sintomasPaciente;
@@ -71,12 +74,31 @@ public class AtencionGuardia implements Comparable<AtencionGuardia> {
 
     @Override
     public String toString() {
-        return "| " + fechaHora.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) + " - Turno de paciente con DNI " + idPaciente + " con Dr. " + idMedico + " (prioridad: " + prioridad + ")";
+        return "| - Turno de paciente con DNI " + idPaciente + " con Dr. " + idMedico + " (prioridad: " + prioridad + ")";
     }
 
-    public void setMedico(Medico menosCargado) {
-        // TODO Auto-generated method stub
+    public void setPrioridad(int prioridad) {
+        this.prioridad = prioridad;
+    }
 
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setIdPaciente(String idPaciente) {
+        this.idPaciente = idPaciente;
+    }
+
+    public void setIdMedico(String idMedico) {
+        this.idMedico = idMedico;
+    }
+
+    public void setIdEspecialidad(String idEspecialidad) {
+        this.idEspecialidad = idEspecialidad;
+    }
+
+    public void setSintomasPaciente(Set<Sintoma> sintomasPaciente) {
+        this.sintomasPaciente = sintomasPaciente;
     }
 }
 
