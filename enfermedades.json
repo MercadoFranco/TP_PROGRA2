@@ -1,10 +1,4 @@
-[ {
-  "id" : null,
-  "nombre" : "ACV",
-  "idEspecialidad" : "081113373110000",
-  "sintomas" : [ "MAREO", "PERDIDA_CONOCIMIENTO", "DOLOR_CABEZA" ],
-  "prioridad" : 4
-}, {
+[  {
   "id" : null,
   "nombre" : "Accidente Cerebrovascular",
   "idEspecialidad" : "081113373110000",
